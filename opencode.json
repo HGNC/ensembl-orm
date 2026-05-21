@@ -10,6 +10,7 @@
 				"TASK_MASTER_TOOLS": "all",
 				"ANTHROPIC_API_KEY": "{env:ANTHROPIC_AUTH_TOKEN}",
 				"PERPLEXITY_API_KEY": "{env:PERPLEXITY_API_KEY}",
+				"GOOGLE_API_KEY": "{env:GOOGLE_API_KEY}",
 				"ZAI_API_KEY": "{env:ZAI_API_KEY}",
 				"ZAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4"
 			}
