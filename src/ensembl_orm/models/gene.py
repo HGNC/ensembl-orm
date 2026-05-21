@@ -44,12 +44,8 @@ class Gene(SQLModel, table=True):
     source: str = Field(sa_column=Column(String(255), nullable=False))
     description: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
     is_current: bool = Field(sa_column=Column(Boolean, nullable=False))
-    canonical_transcript_id: int | None = Field(
-        default=None, sa_column=Column(Integer, nullable=True)
-    )
-    canonical_translation_id: int | None = Field(
-        default=None, sa_column=Column(Integer, nullable=True)
-    )
+    canonical_transcript_id: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
+    canonical_translation_id: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
     stable_id: str | None = Field(default=None, sa_column=Column(String(128), nullable=True))
     version: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
     created_date: datetime | None = Field(default=None, sa_column=Column(DateTime, nullable=True))
