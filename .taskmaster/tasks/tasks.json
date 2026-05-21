@@ -83,7 +83,7 @@
         "id": "10",
         "title": "Database discovery module implementation",
         "description": "Implement the discover_database_name() function in discovery.py that dynamically resolves the current Ensembl homo_sapiens_core database name by fetching the release version from the Ensembl FTP server and querying MySQL with SHOW DATABASES LIKE pattern. Includes in-memory caching and error handling.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "9"
         ],
@@ -131,9 +131,10 @@
             "description": "Implement reset_cache() and ensure module-level globals (logger, _cached_database_name, VERSION_URL) are correctly defined and documented to support caching and testing of the discovery logic.",
             "dependencies": [],
             "details": "Declare the module-level logger via logging.getLogger('ensembl_orm') and define VERSION_URL pointing to the Ensembl FTP VERSION file. Initialize the private module-level cache variable _cached_database_name: Optional[str] = None. Implement reset_cache() to use the global keyword and set _cached_database_name back to None. This function is intended for use in tests to ensure isolation between test cases and to reset state between different discovery scenarios. Document the purpose of the cache and reset_cache in docstrings so that future maintainers understand how caching interacts with discover_database_name and unit tests.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit test reset_cache by first manually populating the cache (e.g., by calling discover_database_name with mocked helpers or by directly setting the module variable), then calling reset_cache and verifying that subsequent calls to discover_database_name re-invoke the underlying helper functions rather than returning the previous cached value. Also validate that _cached_database_name is initialized to None on module import (e.g., via direct attribute inspection in tests).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-21T15:36:53.545Z"
           },
           {
             "id": 5,
@@ -154,7 +155,7 @@
         "complexity": 7,
         "recommendedSubtasks": 5,
         "expansionPrompt": "Decompose task 10 \"Database discovery module implementation\" into 5 focused subtasks. Include: (1) implement _fetch_release_version with robust error handling around urlopen; (2) implement _resolve_database_name using SQLAlchemy engine creation, SHOW DATABASES LIKE, and proper cleanup; (3) implement discover_database_name with caching, settings.database override, and logging; (4) implement reset_cache and any module-level initialization details; (5) write tests/test_discovery.py with mocking for urlopen and SQLAlchemy to cover all listed scenarios. Ensure each subtask is independently testable and note dependencies between helpers and the public API.",
-        "updatedAt": "2026-05-21T15:30:04.397Z"
+        "updatedAt": "2026-05-21T15:37:20.551Z"
       },
       {
         "id": "11",
@@ -638,9 +639,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T15:30:04.397Z",
+      "lastModified": "2026-05-21T15:37:20.551Z",
       "taskCount": 8,
-      "completedCount": 1,
+      "completedCount": 2,
       "tags": [
         "master"
       ]
