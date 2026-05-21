@@ -271,7 +271,7 @@
         "id": "12",
         "title": "Enum definitions for Ensembl column types",
         "description": "Define the four StrEnum classes (EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType) that map to MySQL ENUM columns in the Ensembl database, placed in enums.py.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "9"
         ],
@@ -305,7 +305,7 @@
         "complexity": 3,
         "recommendedSubtasks": 2,
         "expansionPrompt": "Decompose task 12 \"Enum definitions for Ensembl column types\" into 2 subtasks: (1) implement src/ensembl_orm/enums.py with the four StrEnum classes and any necessary exports; (2) create tests/test_enums.py to validate members, string values, construction from strings, and error cases. Keep each subtask small and ensure tests fully cover the enum API.",
-        "updatedAt": "2026-05-21T16:15:17.748Z"
+        "updatedAt": "2026-05-21T16:19:55.727Z"
       },
       {
         "id": "13",
@@ -654,9 +654,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T16:15:17.748Z",
+      "lastModified": "2026-05-21T16:19:55.727Z",
       "taskCount": 8,
-      "completedCount": 3,
+      "completedCount": 4,
       "tags": [
         "master"
       ]
