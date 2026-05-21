@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": 9,
+        "id": "9",
         "title": "Project scaffolding and DatabaseSettings configuration",
         "description": "Create the project directory structure, pyproject.toml with all dependencies, and implement the DatabaseSettings Pydantic BaseSettings class with ENSEMBLDB_ prefixed environment variable support. Includes custom exceptions module, __init__.py public API stubs, and all project boilerplate files.",
         "status": "done",
@@ -82,7 +82,7 @@
         "updatedAt": "2026-05-21T15:42:54.576Z"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Database discovery module implementation",
         "description": "Implement the discover_database_name() function in discovery.py that dynamically resolves the current Ensembl homo_sapiens_core database name by fetching the release version from the Ensembl FTP server and querying MySQL with SHOW DATABASES LIKE pattern. Includes in-memory caching and error handling.",
         "status": "done",
@@ -165,7 +165,7 @@
         "updatedAt": "2026-05-21T15:41:33.696Z"
       },
       {
-        "id": 11,
+        "id": "11",
         "title": "Session management implementation",
         "description": "Implement session.py with the four public functions (initialize_engine, get_engine, get_session, close_all_sessions) providing read-only session management with connection pooling, integrating with DatabaseSettings and the discovery module.",
         "status": "done",
@@ -268,10 +268,10 @@
         "updatedAt": "2026-05-21T15:49:55.550Z"
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Enum definitions for Ensembl column types",
         "description": "Define the four StrEnum classes (EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType) that map to MySQL ENUM columns in the Ensembl database, placed in enums.py.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "9"
         ],
@@ -286,7 +286,8 @@
             "details": "Create tests/test_enums.py (flat structure, consistent with tests/test_discovery.py, tests/test_session.py).\n\nImport all four enums from their public path: `from ensembl_orm.enums import EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType`. These imports WILL FAIL in the Red phase because enums.py does not exist yet — that is expected and correct.\n\nTest cases to implement:\n\n1. **Member completeness and values** (parametrized for each enum):\n   - EnsemblObjectType members: {GENE=\"Gene\", TRANSCRIPT=\"Transcript\", TRANSLATION=\"Translation\"}\n   - ExternalDbStatus members: {KNOWN=\"KNOWN\", XREF=\"XREF\", DUMPED=\"DUMPED\", DEPENDENT=\"DEPENDENT\"}\n   - InfoType members: {NONE=\"NONE\", PROBE=\"PROBE\", DEPENDENT=\"DEPENDENT\", DIRECT=\"DIRECT\", INFERRED_PAIR=\"INFERRED_PAIR\", PROBE2TRANSCRIPT=\"PROBE2TRANSCRIPT\", UNMAPPED=\"UNMAPPED\", CHECKSUM=\"CHECKSUM\"}\n   - ExternalDbType members: {PRIMARY=\"PRIMARY\", SECONDARY=\"SECONDARY\", MISC=\"MISC\", CHECKSUM=\"CHECKSUM\", DEPENDENT=\"DEPENDENT\", IMAGE_DEPICTION=\"IMAGE_DEPICTION\"}\n   - Assert `{m.name for m in EnumClass}` matches expected names.\n   - Assert each member's `.value` equals the expected string.\n   - Assert `isinstance(member.value, str)` for all members.\n\n2. **String comparison equality** (critical for SQLAlchemy queries):\n   - For every member of every enum, assert `member == member.value` (e.g., `EnsemblObjectType.GENE == \"Gene\"`).\n   - This ensures SQLAlchemy filter expressions like `session.query(X).where(X.type == EnsemblObjectType.GENE)` work correctly.\n\n3. **Construction from valid strings** (parametrized):\n   - `assert EnsemblObjectType(\"Gene\") is EnsemblObjectType.GENE`\n   - `assert EnsemblObjectType(\"Gene\").value == \"Gene\"`\n   - At least one representative member per enum.\n\n4. **Invalid value handling** (parametrized):\n   - `pytest.raises(ValueError)` for each enum with \"INVALID\"\n   - `pytest.raises(ValueError)` for wrong case (e.g., `EnsemblObjectType(\"gene\")`)\n\n5. **Iteration and len**:\n   - `assert len(EnsemblObjectType) == 3`, etc.\n   - `assert list(EnsemblObjectType)` returns all members.\n\n6. **@unique enforcement**:\n   - Confirm no duplicate values within each enum by checking `len(set(m.value for m in EnumClass)) == len(EnumClass)`.\n\n7. **SQLAlchemy Enum integration**:\n   - `from sqlalchemy import Enum as SAEnum`\n   - `SAEnum(EnsemblObjectType)` instantiates without error for all four enum classes.\n   - Optionally: define a minimal Column with the SAEnum type to verify ORM column definition works.\n\n8. **Public API re-export**:\n   - `from ensembl_orm import EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType` succeeds.\n   - Imported objects are the same as from `ensembl_orm.enums`.\n\nUse pytest.mark.parametrize extensively to reduce duplication. Organize into test classes or descriptive function names like `test_ensembl_object_type_members`, `test_string_comparison_equality`, etc.\n\nCompletion criteria: All tests are written and FAIL because enums.py does not exist. Running `uv run pytest tests/test_enums.py` shows import errors or collection failures.",
             "status": "pending",
             "dependencies": [],
-            "parentTaskId": 12
+            "parentTaskId": 12,
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -297,15 +298,17 @@
             "dependencies": [
               1
             ],
-            "parentTaskId": 12
+            "parentTaskId": 12,
+            "parentId": "undefined"
           }
         ],
         "complexity": 3,
         "recommendedSubtasks": 2,
-        "expansionPrompt": "Decompose task 12 \"Enum definitions for Ensembl column types\" into 2 subtasks: (1) implement src/ensembl_orm/enums.py with the four StrEnum classes and any necessary exports; (2) create tests/test_enums.py to validate members, string values, construction from strings, and error cases. Keep each subtask small and ensure tests fully cover the enum API."
+        "expansionPrompt": "Decompose task 12 \"Enum definitions for Ensembl column types\" into 2 subtasks: (1) implement src/ensembl_orm/enums.py with the four StrEnum classes and any necessary exports; (2) create tests/test_enums.py to validate members, string values, construction from strings, and error cases. Keep each subtask small and ensure tests fully cover the enum API.",
+        "updatedAt": "2026-05-21T16:15:17.748Z"
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "Gene and SeqRegion model implementations",
         "description": "Implement the Gene and SeqRegion SQLModel table models with correct column mappings, types, nullable constraints, and the Gene->SeqRegion many-to-one relationship.",
         "status": "pending",
@@ -371,7 +374,7 @@
         "expansionPrompt": "Decompose task 13 \"Gene and SeqRegion model implementations\" into 4 subtasks. Include: (1) implement src/ensembl_orm/models/seq_region.py with correct columns and types; (2) implement src/ensembl_orm/models/gene.py with all columns, nullable constraints, and the seq_region_id ForeignKey to SeqRegion; (3) define the Gene.seq_region Relationship and ensure any forward-reference handling is correct; (4) write tests/models/test_seq_region.py and tests/models/test_gene.py to validate tablenames, columns, nullability, and relationships. Note ordering so that SeqRegion exists before Gene’s foreign key and relationship."
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "Xref, ObjectXref, and ExternalDb model implementations",
         "description": "Implement the ExternalDb, Xref, and ObjectXref SQLModel table models with correct column mappings, enum types, nullable constraints, and the Xref->ExternalDb and ObjectXref->Xref many-to-one relationships.",
         "status": "pending",
@@ -451,7 +454,7 @@
         "expansionPrompt": "Decompose task 14 \"Xref, ObjectXref, and ExternalDb model implementations\" into 5 subtasks. Cover: (1) implement ExternalDb model with enum-backed status/type fields; (2) implement Xref model, including ForeignKey to external_db.external_db_id, InfoType enum usage, and relationship to ExternalDb; (3) implement ObjectXref model with ForeignKey to xref.xref_id, EnsemblObjectType enum, and relationship to Xref; (4) update models/__init__.py to export all three models and handle any forward references; (5) create tests/models/test_external_db.py, tests/models/test_xref.py, and tests/models/test_object_xref.py to validate tablenames, columns, enums, relationships, and nullability. Ensure subtasks are ordered to satisfy model dependencies."
       },
       {
-        "id": 15,
+        "id": "15",
         "title": "SeqRegionAttrib and Karyotype model implementations",
         "description": "Implement the SeqRegionAttrib model with composite primary key and the Karyotype model with its SeqRegion relationship, completing all 7 Ensembl table mappings.",
         "status": "pending",
@@ -526,7 +529,7 @@
         "expansionPrompt": "Decompose task 15 \"SeqRegionAttrib and Karyotype model implementations\" into 5 subtasks. Include: (1) implement SeqRegionAttrib with the composite primary key via __table_args__; (2) implement Karyotype with ForeignKey to seq_region.seq_region_id and the seq_region Relationship; (3) update models/__init__.py to export SeqRegionAttrib and Karyotype plus any required forward-reference resolution; (4) write tests/models/test_seq_region_attrib.py for tablename, composite PK, and column types; (5) write tests/models/test_karyotype.py for tablename, columns, nullability, and SeqRegion relationship. Explicitly call out dependencies on the existing SeqRegion model."
       },
       {
-        "id": 16,
+        "id": "16",
         "title": "Integration verification, public API finalization, and documentation",
         "description": "Finalize the public API exports in __init__.py, verify all models import correctly, run full test suite, apply linting/formatting with ruff, write README.md with installation and usage examples, and ensure package is installable as a git-source dependency.",
         "status": "pending",
@@ -651,14 +654,12 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T15:49:55.550Z",
+      "lastModified": "2026-05-21T16:15:17.748Z",
       "taskCount": 8,
       "completedCount": 3,
       "tags": [
         "master"
-      ],
-      "created": "2026-05-21T16:10:42.852Z",
-      "description": "Tasks for master context"
+      ]
     }
   }
 }
