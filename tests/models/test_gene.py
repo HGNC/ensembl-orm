@@ -65,3 +65,17 @@ def test_primary_key():
     mapper = sa_inspect(Gene)
     pk_cols = {c.key for c in mapper.primary_key}
     assert pk_cols == {"gene_id"}
+
+
+def test_seq_region_relationship_exists():
+    mapper = sa_inspect(Gene)
+    rel_names = {r.key for r in mapper.relationships}
+    assert "seq_region" in rel_names
+
+
+def test_models_package_imports():
+    from ensembl_orm.models import Gene as ImportedGene
+    from ensembl_orm.models import SeqRegion as ImportedSeqRegion
+
+    assert ImportedGene.__tablename__ == "gene"
+    assert ImportedSeqRegion.__tablename__ == "seq_region"

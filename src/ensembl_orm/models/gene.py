@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+from ensembl_orm.models.seq_region import SeqRegion
 
 
 class Gene(SQLModel, table=True):
@@ -52,3 +54,5 @@ class Gene(SQLModel, table=True):
     version: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
     created_date: datetime | None = Field(default=None, sa_column=Column(DateTime, nullable=True))
     modified_date: datetime | None = Field(default=None, sa_column=Column(DateTime, nullable=True))
+
+    seq_region: SeqRegion | None = Relationship()
