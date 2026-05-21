@@ -168,7 +168,7 @@
         "id": "11",
         "title": "Session management implementation",
         "description": "Implement session.py with the four public functions (initialize_engine, get_engine, get_session, close_all_sessions) providing read-only session management with connection pooling, integrating with DatabaseSettings and the discovery module.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "10"
         ],
@@ -195,9 +195,10 @@
               1
             ],
             "details": "Implementation scope:\n- Complete the `get_engine() -> Engine` function in src/ensembl_orm/session.py using the skeleton provided.\n\nBehavior and logic:\n- Inputs:\n  - No parameters; it accesses the module-level `_engine`.\n- Processing steps:\n  - If `_engine` is None, raise `EnsemblSessionError` with a helpful message (e.g., \"Engine not initialized. Call initialize_engine() first.\").\n  - If `_engine` is not None, return it unchanged.\n- Outputs:\n  - Returns the already-initialized `Engine` instance if available.\n  - Otherwise raises `EnsemblSessionError`.\n- Side effects on globals:\n  - None; this function is read-only with respect to `_engine`.\n\nDependencies:\n- Depends on subtask 1 for correct initialization and existence of the `_engine` global.\n- Requires `EnsemblSessionError` from ensembl_orm.exceptions to be imported and used as the failure mode when accessing an uninitialized engine.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests should:\n- Ensure that when `_engine` is None, calling get_engine() raises EnsemblSessionError with the expected message.\n- After calling initialize_engine() (or setting `_engine` via monkeypatch), verify that get_engine() returns exactly the global `_engine` instance.\n- Confirm that get_engine() does not attempt to create or modify the engine; it should never call create_engine or discover_database_name directly (validated with mocks).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-21T15:49:04.349Z"
           },
           {
             "id": 3,
@@ -207,9 +208,10 @@
               2
             ],
             "details": "Implementation scope:\n- Implement the `@contextmanager`-decorated function `get_session() -> Generator[Session, None, None]` in src/ensembl_orm/session.py.\n\nBehavior and logic:\n- Inputs:\n  - No direct parameters; internally uses get_engine() to obtain the Engine.\n- Processing steps:\n  - Call `engine = get_engine()`; rely on get_engine to raise EnsemblSessionError if uninitialized.\n  - Construct a `Session` instance: `session = Session(engine)` from sqlmodel.\n  - Before yielding, enforce read-only behavior by executing `session.exec(text(\"SET SESSION TRANSACTION READ ONLY\"))`.\n  - Yield the `session` inside the context manager so that callers can perform read-only queries.\n  - In a `finally` block, ensure `session.close()` is called to release the connection back to the pool.\n- Outputs:\n  - Yields a live SQLModel Session bound to the global Engine, configured for read-only transactions.\n  - After the context exits, the session is closed; callers do not receive a return value beyond the yielded session.\n- Side effects on globals:\n  - No modification to `_engine` or other globals.\n  - Uses the global Engine’s connection pool via Session.\n\nDependencies:\n- Depends on subtask 2 (get_engine) to retrieve the Engine and to surface proper error handling when the engine is uninitialized.\n- Requires SQLAlchemy `text` and sqlmodel `Session` imports to be available and correct.\n- Uses the contextmanager decorator from contextlib.\n\nUsage example (for documentation/tests):\n```python\nwith get_session() as session:\n    rows = session.exec(text(\"SELECT 1\")).all()\n```\nThis must run under a read-only transaction.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests should:\n- Mock get_engine() to return a fake Engine, and patch sqlmodel.Session to a mock class so that no real DB connection is required.\n- Verify that get_session() creates a Session instance with the engine returned by get_engine().\n- Confirm that `session.exec` is called exactly once with `text(\"SET SESSION TRANSACTION READ ONLY\")` before yielding control.\n- Use a with-block around get_session() and assert that the yielded object is a Session instance (or the mock substitute).\n- Verify that `session.close()` is called in all cases (normal exit and when an exception is raised inside the with-block).\n- Confirm that if get_engine() raises EnsemblSessionError, get_session propagates the exception and does not attempt to create or close a Session.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-21T15:49:04.352Z"
           },
           {
             "id": 4,
@@ -221,9 +223,10 @@
               3
             ],
             "details": "Implementation scope:\n- Implement `close_all_sessions() -> None` in src/ensembl_orm/session.py as per the skeleton.\n\nBehavior and logic:\n- Inputs:\n  - No parameters; it operates on the module-level `_engine`.\n- Processing steps:\n  - Declare `_engine` as global within the function so it can be reassigned.\n  - If `_engine` is not None:\n    - Call `_engine.dispose()` to close all connections and clear the connection pool.\n    - Set `_engine = None` to reflect that there is no active global engine.\n    - Log at info level that the engine was disposed and cleared (e.g., message \"Engine disposed and cleared\").\n  - If `_engine` is already None, perform no action (function becomes safely idempotent).\n- Outputs:\n  - Returns None.\n- Side effects on globals:\n  - May modify the `_engine` global from an Engine instance to None.\n  - Triggers engine disposal which closes pooled connections.\n\nDependencies:\n- Depends on subtask 1 for the existence and semantics of `_engine`.\n- Should be consistent with get_engine() and initialize_engine(), enabling a full lifecycle: initialize_engine() -> get_session()/get_engine() -> close_all_sessions() -> optional re-initialization.\n- Uses the module-level logger for observability.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests should:\n- Initialize `_engine` to a mock Engine object with a mock dispose() method, then call close_all_sessions() and assert:\n  - dispose() was called exactly once.\n  - `_engine` is set to None after the call.\n- Call close_all_sessions() when `_engine` is already None and assert that no exceptions are raised and dispose() is not called.\n- Optionally verify that the expected log message is emitted at info level when an engine is disposed (using a logging capture fixture).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-21T15:49:17.759Z"
           },
           {
             "id": 5,
@@ -236,9 +239,10 @@
               4
             ],
             "details": "Implementation scope:\n- Modify src/ensembl_orm/__init__.py to re-export the session management functions and relevant types.\n\nBehavior and logic:\n- Inputs:\n  - The functions and classes defined in other modules:\n    - initialize_engine, get_engine, get_session, close_all_sessions from ensembl_orm.session.\n    - DatabaseSettings from ensembl_orm.config.database_settings.\n    - EnsemblDiscoveryError, EnsemblSessionError from ensembl_orm.exceptions.\n- Processing steps:\n  - Add (or ensure presence of) the following imports in __init__.py:\n    ```python\n    from ensembl_orm.session import initialize_engine, get_engine, get_session, close_all_sessions\n    from ensembl_orm.config.database_settings import DatabaseSettings\n    from ensembl_orm.exceptions import EnsemblDiscoveryError, EnsemblSessionError\n    ```\n  - Optionally define `__all__` to include these names, ensuring they are part of the documented public API (if the project uses __all__).\n- Outputs:\n  - Enables users to import these symbols directly via `import ensembl_orm` or `from ensembl_orm import initialize_engine, get_session, ...`.\n- Side effects on globals:\n  - None in terms of runtime; this is a structural/public-API change only.\n\nDependencies:\n- Depends on subtasks 1–4 so that the imported symbols exist and behave as defined.\n- Must be compatible with any existing exports already defined in __init__.py, avoiding accidental removal of other public symbols.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests (could be part of test_session.py or a separate test) should:\n- Import from the package root: `from ensembl_orm import initialize_engine, get_engine, get_session, close_all_sessions, DatabaseSettings, EnsemblDiscoveryError, EnsemblSessionError` and assert that the imports succeed.\n- Optionally verify that these imported names are the same objects as those defined in their source modules (using `is` comparisons).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-21T15:49:36.641Z"
           },
           {
             "id": 6,
@@ -252,15 +256,16 @@
               5
             ],
             "details": "Implementation scope:\n- Create or extend tests/test_session.py to cover all scenarios described in the task’s test strategy (Section 8.2) and the earlier subtasks.\n\nBehavior and logic to test:\n- Inputs under test:\n  - Direct calls to initialize_engine, get_engine, get_session, and close_all_sessions.\n  - Import behavior from ensembl_orm.__init__.\n- Key test cases (using pytest and monkeypatch/mocks):\n  1. initialize_engine:\n     - When called with no settings and no existing engine:\n       - Mock DatabaseSettings to produce a MySQL mysql+mysqldb connection_url and verify create_engine is called with that URL and the expected pool_size/pool_recycle.\n       - With settings.database initially empty, mock discover_database_name to return a fake DB name and assert it is assigned to settings.database.\n     - When settings.database is pre-populated, ensure discover_database_name is not called.\n     - Confirm idempotency: subsequent calls to initialize_engine return the same Engine instance and do not call create_engine again.\n     - Validate that the debug log masks the password in the logged URL.\n  2. get_engine:\n     - With `_engine` unset, assert that get_engine raises EnsemblSessionError with the expected message.\n     - After initialize_engine (or manual monkeypatch of `_engine`), assert that get_engine returns that Engine instance.\n  3. get_session:\n     - Mock get_engine to return a fake Engine; patch sqlmodel.Session with a mock class that tracks constructor arguments, exec calls, and close calls.\n     - Use a with-block around get_session() and assert:\n       - A Session was created with the expected Engine.\n       - session.exec was called with text(\"SET SESSION TRANSACTION READ ONLY\").\n       - session.close was invoked once when the context exits, both in normal and exceptional flows.\n  4. close_all_sessions:\n     - Set `_engine` to a mock Engine with a mock dispose method; call close_all_sessions() and assert dispose() is called and `_engine` is set to None.\n     - Call close_all_sessions() again and confirm no errors and no extra dispose call.\n  5. Public API exports:\n     - From ensembl_orm import initialize_engine, get_engine, get_session, close_all_sessions, DatabaseSettings, EnsemblDiscoveryError, EnsemblSessionError and assert imports succeed.\n\nTest harness details:\n- Use pytest fixtures (e.g., monkeypatch) to isolate tests and to reset the `_engine` global before/after each relevant test so they do not interfere with one another.\n- Avoid real network or database connections by mocking create_engine, DatabaseSettings, and discover_database_name; only shallow, in-memory validation is needed.\n\nOutputs:\n- A complete tests/test_session.py file with passing tests that give high confidence in engine lifecycle management, read-only session behavior, and public API exposure.\n- No side effects beyond normal test execution; ensure the `_engine` global is restored or cleared at the end of each test to maintain test isolation.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Implement the above tests using pytest, mock/monkeypatch, and log capture fixtures, ensuring all public functions and edge cases described in Section 8.2 are covered and that tests run without real DB or network dependencies.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-21T15:49:55.550Z"
           }
         ],
         "complexity": 7,
         "recommendedSubtasks": 6,
         "expansionPrompt": "Decompose task 11 \"Session management implementation\" into 6 ordered subtasks. Cover: (1) implement the global engine state and initialize_engine, including integration with DatabaseSettings and discover_database_name; (2) implement get_engine with EnsemblSessionError handling; (3) implement get_session as a context manager enforcing read-only transactions; (4) implement close_all_sessions with proper disposal and logging; (5) update src/ensembl_orm/__init__.py exports for the session API; (6) write tests/test_session.py using mocks to verify all behaviors in the test strategy. For each subtask, specify inputs/outputs, side effects on globals, and dependencies.",
-        "updatedAt": "2026-05-21T15:48:26.259Z"
+        "updatedAt": "2026-05-21T15:49:55.550Z"
       },
       {
         "id": "12",
@@ -648,9 +653,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T15:48:26.259Z",
+      "lastModified": "2026-05-21T15:49:55.550Z",
       "taskCount": 8,
-      "completedCount": 2,
+      "completedCount": 3,
       "tags": [
         "master"
       ]
