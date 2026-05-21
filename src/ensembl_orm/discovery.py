@@ -102,3 +102,12 @@ def discover_database_name(settings: DatabaseSettings) -> str:
     logger.info("Resolved database name: %s", database_name)
     _cached_database_name = database_name
     return database_name
+
+
+def reset_cache() -> None:
+    """Clear the cached database name.
+
+    Intended for use in tests to ensure isolation between test cases.
+    """
+    global _cached_database_name
+    _cached_database_name = None

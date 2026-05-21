@@ -287,3 +287,52 @@ class TestDiscoverDatabaseName:
         messages = [r.message for r in caplog.records]
         assert any("release version" in m and "112" in m for m in messages)
         assert any("Resolved database name" in m and "homo_sapiens_core_112_38" in m for m in messages)
+
+
+class TestResetCache:
+    """Tests for reset_cache()."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_cache(self):
+        """Clean up cache after each test."""
+        import ensembl_orm.discovery as disc
+
+        disc._cached_database_name = None
+        yield
+        disc._cached_database_name = None
+
+    def test_clears_cached_database_name(self):
+        """reset_cache sets _cached_database_name back to None."""
+        import ensembl_orm.discovery as disc
+
+        disc._cached_database_name = "some_cached_db"
+        disc.reset_cache()
+        assert disc._cached_database_name is None
+
+    def test_forces_rediscovery_after_reset(self):
+        """After reset_cache, discover_database_name re-invokes helpers."""
+        from ensembl_orm.config.database_settings import DatabaseSettings
+
+        import ensembl_orm.discovery as disc
+
+        settings = DatabaseSettings(host="localhost", port=3306, user="testuser", password="testpass")
+
+        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112) as mock_fetch, \
+             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"):
+            disc.discover_database_name(settings)
+
+        assert mock_fetch.call_count == 1
+        disc.reset_cache()
+
+        with patch("ensembl_orm.discovery._fetch_release_version", return_value=113) as mock_fetch2, \
+             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_113_38"):
+            result = disc.discover_database_name(settings)
+
+        assert result == "homo_sapiens_core_113_38"
+        mock_fetch2.assert_called_once()
+
+    def test_cache_initially_none_on_import(self):
+        """_cached_database_name starts as None when module is first loaded."""
+        import ensembl_orm.discovery as disc
+
+        assert disc._cached_database_name is None
