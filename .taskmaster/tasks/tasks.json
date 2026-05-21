@@ -5,7 +5,7 @@
         "id": "9",
         "title": "Project scaffolding and DatabaseSettings configuration",
         "description": "Create the project directory structure, pyproject.toml with all dependencies, and implement the DatabaseSettings Pydantic BaseSettings class with ENSEMBLDB_ prefixed environment variable support. Includes custom exceptions module, __init__.py public API stubs, and all project boilerplate files.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "details": "1. Create the full directory tree as specified in Section 2.3:\n   - src/ensembl_orm/config/, src/ensembl_orm/models/, tests/models/\n2. Write pyproject.toml exactly as specified in Section 9.1 with:\n   - Python >=3.13 requirement\n   - Dependencies: mysqlclient>=2.2.0, sqlalchemy>=2.0.46, sqlmodel>=0.0.33, pydantic>=2.12.5, pydantic-settings>=2.12.0\n   - Dev dependencies: pytest>=9.0.3, pytest-mock>=3.14.0, ruff>=0.15.12\n   - pytest and ruff configuration sections\n3. Create .gitignore (Python project template), .env.example (ENSEMBLDB_HOST/PORT/USER/PASSWORD), .markdownlint.json, LICENSE (MIT)\n4. Implement src/ensembl_orm/config/database_settings.py:\n```python\nfrom pydantic_settings import BaseSettings\n\nclass DatabaseSettings(BaseSettings):\n    host: str = \"ensembldb.ensembl.org\"\n    port: int = 5306\n    user: str = \"anonymous\"\n    password: str = \"\"\n    database: str = \"\"\n    pool_size: int = 3\n    pool_recycle: int = 3600\n\n    model_config = {\"env_prefix\": \"ENSEMBLDB_\"}\n\n    @property\n    def connection_url(self) -> str:\n        return f\"mysql+mysqldb://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}\"\n```\n5. Create src/ensembl_orm/exceptions.py:\n```python\nclass EnsemblDiscoveryError(Exception):\n    \"\"\"Raised when database name discovery fails.\"\"\"\n\nclass EnsemblSessionError(Exception):\n    \"\"\"Raised when session operations fail due to uninitialized engine.\"\"\"\n```\n6. Create stub __init__.py files for config/, models/, and the main package with placeholder public API exports.\n7. Create tests/conftest.py with shared fixtures.\n8. Write tests/test_database_settings.py.",
@@ -77,7 +77,7 @@
         "complexity": 6,
         "recommendedSubtasks": 5,
         "expansionPrompt": "Decompose task 9 \"Project scaffolding and DatabaseSettings configuration\" into 5 ordered, atomic subtasks. Cover: (1) creating the directory tree (src/ensembl_orm/, config/, models/, tests/, tests/models/); (2) authoring pyproject.toml with the exact runtime/dev dependencies and tool configs; (3) creating project boilerplate files (.gitignore, .env.example, .markdownlint.json, LICENSE, initial README stub if any); (4) implementing DatabaseSettings and the exceptions module plus package __init__.py stubs; (5) writing tests/test_database_settings.py and tests/conftest.py per the test strategy. For each subtask, specify concrete file paths, clear completion criteria, and dependencies on earlier subtasks.",
-        "updatedAt": "2026-05-21T14:55:56.696Z"
+        "updatedAt": "2026-05-21T15:18:42.243Z"
       },
       {
         "id": "10",
@@ -637,9 +637,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T14:55:56.697Z",
+      "lastModified": "2026-05-21T15:18:42.243Z",
       "taskCount": 8,
-      "completedCount": 0,
+      "completedCount": 1,
       "tags": [
         "master"
       ]
