@@ -83,7 +83,7 @@
         "id": "10",
         "title": "Database discovery module implementation",
         "description": "Implement the discover_database_name() function in discovery.py that dynamically resolves the current Ensembl homo_sapiens_core database name by fetching the release version from the Ensembl FTP server and querying MySQL with SHOW DATABASES LIKE pattern. Includes in-memory caching and error handling.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "9"
         ],
@@ -153,7 +153,8 @@
         ],
         "complexity": 7,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Decompose task 10 \"Database discovery module implementation\" into 5 focused subtasks. Include: (1) implement _fetch_release_version with robust error handling around urlopen; (2) implement _resolve_database_name using SQLAlchemy engine creation, SHOW DATABASES LIKE, and proper cleanup; (3) implement discover_database_name with caching, settings.database override, and logging; (4) implement reset_cache and any module-level initialization details; (5) write tests/test_discovery.py with mocking for urlopen and SQLAlchemy to cover all listed scenarios. Ensure each subtask is independently testable and note dependencies between helpers and the public API."
+        "expansionPrompt": "Decompose task 10 \"Database discovery module implementation\" into 5 focused subtasks. Include: (1) implement _fetch_release_version with robust error handling around urlopen; (2) implement _resolve_database_name using SQLAlchemy engine creation, SHOW DATABASES LIKE, and proper cleanup; (3) implement discover_database_name with caching, settings.database override, and logging; (4) implement reset_cache and any module-level initialization details; (5) write tests/test_discovery.py with mocking for urlopen and SQLAlchemy to cover all listed scenarios. Ensure each subtask is independently testable and note dependencies between helpers and the public API.",
+        "updatedAt": "2026-05-21T15:30:04.397Z"
       },
       {
         "id": "11",
@@ -637,7 +638,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T15:18:42.243Z",
+      "lastModified": "2026-05-21T15:30:04.397Z",
       "taskCount": 8,
       "completedCount": 1,
       "tags": [
