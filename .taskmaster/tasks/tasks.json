@@ -311,7 +311,7 @@
         "id": "13",
         "title": "Gene and SeqRegion model implementations",
         "description": "Implement the Gene and SeqRegion SQLModel table models with correct column mappings, types, nullable constraints, and the Gene->SeqRegion many-to-one relationship.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "11"
         ],
@@ -372,7 +372,7 @@
         "complexity": 6,
         "recommendedSubtasks": 4,
         "expansionPrompt": "Decompose task 13 \"Gene and SeqRegion model implementations\" into 4 subtasks. Include: (1) implement src/ensembl_orm/models/seq_region.py with correct columns and types; (2) implement src/ensembl_orm/models/gene.py with all columns, nullable constraints, and the seq_region_id ForeignKey to SeqRegion; (3) define the Gene.seq_region Relationship and ensure any forward-reference handling is correct; (4) write tests/models/test_seq_region.py and tests/models/test_gene.py to validate tablenames, columns, nullability, and relationships. Note ordering so that SeqRegion exists before Gene’s foreign key and relationship.",
-        "updatedAt": "2026-05-21T16:34:30.060Z"
+        "updatedAt": "2026-05-21T16:43:11.154Z"
       },
       {
         "id": "14",
@@ -655,9 +655,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T16:34:30.060Z",
+      "lastModified": "2026-05-21T16:43:11.154Z",
       "taskCount": 8,
-      "completedCount": 4,
+      "completedCount": 5,
       "tags": [
         "master"
       ]
