@@ -69,3 +69,36 @@ def _resolve_database_name(settings: DatabaseSettings, version: int) -> str:
         logger.warning("Multiple databases matched: %s. Using first: %s", matches, matches[0])
 
     return matches[0]
+
+
+def discover_database_name(settings: DatabaseSettings) -> str:
+    """Discover and cache the current Ensembl database name.
+
+    If a cached value exists, return it immediately. If ``settings.database``
+    is explicitly set, return that without performing discovery. Otherwise,
+    fetch the release version and resolve the database name, caching the
+    result for subsequent calls.
+
+    Args:
+        settings: Database connection settings.
+
+    Returns:
+        The resolved or cached database name.
+
+    Raises:
+        EnsemblDiscoveryError: If version fetching or database resolution fails.
+    """
+    global _cached_database_name
+
+    if _cached_database_name is not None:
+        return _cached_database_name
+
+    if settings.database:
+        return settings.database
+
+    version = _fetch_release_version()
+    logger.info("Fetched Ensembl release version: %d", version)
+    database_name = _resolve_database_name(settings, version)
+    logger.info("Resolved database name: %s", database_name)
+    _cached_database_name = database_name
+    return database_name

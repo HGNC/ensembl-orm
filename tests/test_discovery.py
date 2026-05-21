@@ -182,3 +182,108 @@ class TestResolveDatabaseName:
         assert "SHOW DATABASES LIKE" in compiled
         assert call_args[0][1] == {"pattern": "homo_sapiens_core_112%"} or \
                call_args[1].get("parameters") == {"pattern": "homo_sapiens_core_112%"}
+
+
+class TestDiscoverDatabaseName:
+    """Tests for discover_database_name()."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_cache(self):
+        """Ensure cache is cleared before and after each test."""
+        import ensembl_orm.discovery as disc
+
+        disc._cached_database_name = None
+        yield
+        disc._cached_database_name = None
+
+    @pytest.fixture()
+    def settings(self):
+        """Provide default DatabaseSettings with no database override."""
+        from ensembl_orm.config.database_settings import DatabaseSettings
+
+        return DatabaseSettings(host="localhost", port=3306, user="testuser", password="testpass")
+
+    def test_returns_cached_value_without_io(self, settings):
+        """When cache is populated, return it without calling helpers."""
+        import ensembl_orm.discovery as disc
+
+        disc._cached_database_name = "cached_db"
+
+        with patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch, \
+             patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve:
+            result = disc.discover_database_name(settings)
+
+        assert result == "cached_db"
+        mock_fetch.assert_not_called()
+        mock_resolve.assert_not_called()
+
+    def test_returns_settings_database_without_discovery(self, settings):
+        """When settings.database is set, return it directly without I/O."""
+        from ensembl_orm.config.database_settings import DatabaseSettings
+
+        override_settings = DatabaseSettings(
+            host="localhost", port=3306, user="testuser", password="testpass",
+            database="my_custom_db",
+        )
+
+        with patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch, \
+             patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve:
+            import ensembl_orm.discovery as disc
+
+            result = disc.discover_database_name(override_settings)
+
+        assert result == "my_custom_db"
+        mock_fetch.assert_not_called()
+        mock_resolve.assert_not_called()
+
+    def test_fetches_and_resolves_on_cache_miss(self, settings):
+        """On cache miss with no override, call both helpers and cache result."""
+        import ensembl_orm.discovery as disc
+
+        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112) as mock_fetch, \
+             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38") as mock_resolve:
+            result = disc.discover_database_name(settings)
+
+        assert result == "homo_sapiens_core_112_38"
+        mock_fetch.assert_called_once()
+        mock_resolve.assert_called_once_with(settings, 112)
+        assert disc._cached_database_name == "homo_sapiens_core_112_38"
+
+    def test_second_call_uses_cache(self, settings):
+        """A subsequent call uses the cached value and skips I/O."""
+        import ensembl_orm.discovery as disc
+
+        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112), \
+             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"):
+            disc.discover_database_name(settings)
+
+        with patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch, \
+             patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve:
+            result = disc.discover_database_name(settings)
+
+        assert result == "homo_sapiens_core_112_38"
+        mock_fetch.assert_not_called()
+        mock_resolve.assert_not_called()
+
+    def test_propagates_discovery_error(self, settings):
+        """EnsemblDiscoveryError from helpers propagates to the caller."""
+        from ensembl_orm.discovery import discover_database_name
+
+        with patch("ensembl_orm.discovery._fetch_release_version", side_effect=EnsemblDiscoveryError("boom")):
+            with pytest.raises(EnsemblDiscoveryError, match="boom"):
+                discover_database_name(settings)
+
+    def test_logs_version_and_database_on_discovery(self, settings, caplog):
+        """Info-level logs are emitted for version and database name."""
+        import logging
+
+        import ensembl_orm.discovery as disc
+
+        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112), \
+             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"), \
+             caplog.at_level(logging.INFO, logger="ensembl_orm"):
+            disc.discover_database_name(settings)
+
+        messages = [r.message for r in caplog.records]
+        assert any("release version" in m and "112" in m for m in messages)
+        assert any("Resolved database name" in m and "homo_sapiens_core_112_38" in m for m in messages)
