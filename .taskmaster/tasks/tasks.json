@@ -465,7 +465,7 @@
         "id": "15",
         "title": "SeqRegionAttrib and Karyotype model implementations",
         "description": "Implement the SeqRegionAttrib model with composite primary key and the Karyotype model with its SeqRegion relationship, completing all 7 Ensembl table mappings.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "14"
         ],
@@ -479,9 +479,10 @@
             "description": "Create the SeqRegionAttrib ORM model with the correct table name, composite primary key, and columns matching the Ensembl seq_region_attrib table.",
             "dependencies": [],
             "details": "Add src/ensembl_orm/models/seq_region_attrib.py defining class SeqRegionAttrib(SQLModel, table=True) with __tablename__ = 'seq_region_attrib'. Configure __table_args__ to use PrimaryKeyConstraint('seq_region_id', 'attrib_type_id') to represent the composite primary key. Implement three fields: seq_region_id: int, attrib_type_id: int (both non-nullable Integer), and value: Optional[str] with String(255) and nullable=True. Ensure imports are from sqlmodel (SQLModel, Field) and sqlalchemy (Column, Integer, String, PrimaryKeyConstraint). Include a brief class docstring describing the mapping.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Implementation will be verified by unit tests in tests/models/test_seq_region_attrib.py (see subtask 4).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T08:13:36.744Z"
           },
           {
             "id": 2,
@@ -489,9 +490,10 @@
             "description": "Create the Karyotype ORM model with correct columns, ForeignKey to seq_region.seq_region_id, and a Relationship to the existing SeqRegion model.",
             "dependencies": [],
             "details": "Add src/ensembl_orm/models/karyotype.py defining class Karyotype(SQLModel, table=True) with __tablename__ = 'karyotype'. Implement columns: karyotype_id Optional[int] as primary key Integer, seq_region_id: int with ForeignKey('seq_region.seq_region_id'), seq_region_start: int, seq_region_end: int, band: Optional[str] = String(255), and stain: Optional[str] = String(255). Define seq_region: Optional['SeqRegion'] = Relationship() to represent the many-to-one link to SeqRegion. Explicitly note the dependency on the existing SeqRegion model (implemented in Task 13) being available as ensembl_orm.models.seq_region.SeqRegion; keep the type annotation as a forward reference string to be resolved in __init__.py.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Implementation will be exercised by unit tests in tests/models/test_karyotype.py (see subtask 5), which will validate the ForeignKey and Relationship behavior.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T08:13:36.747Z"
           },
           {
             "id": 3,
@@ -502,9 +504,10 @@
               2
             ],
             "details": "Edit src/ensembl_orm/models/__init__.py to import and re-export SeqRegionAttrib and Karyotype alongside existing models (including the pre-existing SeqRegion model from Task 13). Update __all__ (or equivalent export list) to include 'SeqRegionAttrib' and 'Karyotype'. Ensure that the import order or explicit forward-reference resolution (e.g., using a project-level UPDATE_FORWARD_REFS helper or direct Karyotype.update_forward_refs(SeqRegion=SeqRegion)) correctly binds the 'SeqRegion' forward reference in the Karyotype.seq_region Relationship. Explicitly document that Karyotype depends on the existing SeqRegion model and that models.__init__ is responsible for making that relationship resolvable on import.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Add or update a lightweight smoke test (or reuse model tests) that imports ensembl_orm.models and asserts that Karyotype and SeqRegionAttrib are accessible and that Karyotype.seq_region.property.mapper.class_ is the SeqRegion class, confirming forward references are resolved.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T08:13:36.749Z"
           },
           {
             "id": 4,
@@ -514,9 +517,10 @@
               1
             ],
             "details": "Implement tests/models/test_seq_region_attrib.py. Add tests to assert SeqRegionAttrib.__tablename__ == 'seq_region_attrib'; that the SQLAlchemy table has a composite primary key over seq_region_id and attrib_type_id via __table_args__; and that the mapped columns are exactly seq_region_id, attrib_type_id (both non-nullable Integer) and value (nullable String with length 255). Use SQLModel.metadata.tables or SQLAlchemy inspection to verify primary key configuration and column metadata rather than relying only on annotations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest on tests/models/test_seq_region_attrib.py to ensure all assertions pass: tablename, composite PK configuration, column count, and column types/nullability match the Ensembl schema.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T08:13:36.752Z"
           },
           {
             "id": 5,
@@ -527,15 +531,16 @@
               3
             ],
             "details": "Implement tests/models/test_karyotype.py. Add tests to assert Karyotype.__tablename__ == 'karyotype'; verify the presence and types of karyotype_id, seq_region_id, seq_region_start, seq_region_end, band, and stain fields; and check nullability constraints (karyotype_id primary key, seq_region_id/start/end non-nullable, band and stain nullable with String(255)). Add tests that import both Karyotype and SeqRegion (from ensembl_orm.models) and verify that Karyotype.seq_region is configured as a Relationship targeting the SeqRegion class, confirming the explicit dependency on the existing SeqRegion model and that forward references were resolved via models.__init__.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run pytest on tests/models/test_karyotype.py to confirm tablename, column metadata, nullability, and that the Relationship destination for Karyotype.seq_region is the SeqRegion model class as expected.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T08:13:36.754Z"
           }
         ],
         "complexity": 6,
         "recommendedSubtasks": 5,
         "expansionPrompt": "Decompose task 15 \"SeqRegionAttrib and Karyotype model implementations\" into 5 subtasks. Include: (1) implement SeqRegionAttrib with the composite primary key via __table_args__; (2) implement Karyotype with ForeignKey to seq_region.seq_region_id and the seq_region Relationship; (3) update models/__init__.py to export SeqRegionAttrib and Karyotype plus any required forward-reference resolution; (4) write tests/models/test_seq_region_attrib.py for tablename, composite PK, and column types; (5) write tests/models/test_karyotype.py for tablename, columns, nullability, and SeqRegion relationship. Explicitly call out dependencies on the existing SeqRegion model.",
-        "updatedAt": "2026-05-22T07:59:34.293Z"
+        "updatedAt": "2026-05-22T08:13:36.754Z"
       },
       {
         "id": "16",
@@ -663,9 +668,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-22T07:59:34.293Z",
+      "lastModified": "2026-05-22T08:13:36.754Z",
       "taskCount": 8,
-      "completedCount": 6,
+      "completedCount": 7,
       "tags": [
         "master"
       ]
