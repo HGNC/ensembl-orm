@@ -465,7 +465,7 @@
         "id": "15",
         "title": "SeqRegionAttrib and Karyotype model implementations",
         "description": "Implement the SeqRegionAttrib model with composite primary key and the Karyotype model with its SeqRegion relationship, completing all 7 Ensembl table mappings.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "14"
         ],
@@ -534,7 +534,8 @@
         ],
         "complexity": 6,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Decompose task 15 \"SeqRegionAttrib and Karyotype model implementations\" into 5 subtasks. Include: (1) implement SeqRegionAttrib with the composite primary key via __table_args__; (2) implement Karyotype with ForeignKey to seq_region.seq_region_id and the seq_region Relationship; (3) update models/__init__.py to export SeqRegionAttrib and Karyotype plus any required forward-reference resolution; (4) write tests/models/test_seq_region_attrib.py for tablename, composite PK, and column types; (5) write tests/models/test_karyotype.py for tablename, columns, nullability, and SeqRegion relationship. Explicitly call out dependencies on the existing SeqRegion model."
+        "expansionPrompt": "Decompose task 15 \"SeqRegionAttrib and Karyotype model implementations\" into 5 subtasks. Include: (1) implement SeqRegionAttrib with the composite primary key via __table_args__; (2) implement Karyotype with ForeignKey to seq_region.seq_region_id and the seq_region Relationship; (3) update models/__init__.py to export SeqRegionAttrib and Karyotype plus any required forward-reference resolution; (4) write tests/models/test_seq_region_attrib.py for tablename, composite PK, and column types; (5) write tests/models/test_karyotype.py for tablename, columns, nullability, and SeqRegion relationship. Explicitly call out dependencies on the existing SeqRegion model.",
+        "updatedAt": "2026-05-22T07:59:34.293Z"
       },
       {
         "id": "16",
@@ -662,7 +663,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-22T07:52:39.346Z",
+      "lastModified": "2026-05-22T07:59:34.293Z",
       "taskCount": 8,
       "completedCount": 6,
       "tags": [
