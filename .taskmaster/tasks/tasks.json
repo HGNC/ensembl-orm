@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": 9,
+        "id": "9",
         "title": "Project scaffolding and DatabaseSettings configuration",
         "description": "Create the project directory structure, pyproject.toml with all dependencies, and implement the DatabaseSettings Pydantic BaseSettings class with ENSEMBLDB_ prefixed environment variable support. Includes custom exceptions module, __init__.py public API stubs, and all project boilerplate files.",
         "status": "done",
@@ -82,7 +82,7 @@
         "updatedAt": "2026-05-21T15:42:54.576Z"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Database discovery module implementation",
         "description": "Implement the discover_database_name() function in discovery.py that dynamically resolves the current Ensembl homo_sapiens_core database name by fetching the release version from the Ensembl FTP server and querying MySQL with SHOW DATABASES LIKE pattern. Includes in-memory caching and error handling.",
         "status": "done",
@@ -165,7 +165,7 @@
         "updatedAt": "2026-05-21T15:41:33.696Z"
       },
       {
-        "id": 11,
+        "id": "11",
         "title": "Session management implementation",
         "description": "Implement session.py with the four public functions (initialize_engine, get_engine, get_session, close_all_sessions) providing read-only session management with connection pooling, integrating with DatabaseSettings and the discovery module.",
         "status": "done",
@@ -268,7 +268,7 @@
         "updatedAt": "2026-05-21T15:49:55.550Z"
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Enum definitions for Ensembl column types",
         "description": "Define the four StrEnum classes (EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType) that map to MySQL ENUM columns in the Ensembl database, placed in enums.py.",
         "status": "done",
@@ -310,7 +310,7 @@
         "updatedAt": "2026-05-21T16:51:59.674Z"
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "Gene and SeqRegion model implementations",
         "description": "Implement the Gene and SeqRegion SQLModel table models with correct column mappings, types, nullable constraints, and the Gene->SeqRegion many-to-one relationship.",
         "status": "done",
@@ -381,7 +381,7 @@
         "updatedAt": "2026-05-21T16:50:28.032Z"
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "Xref, ObjectXref, and ExternalDb model implementations",
         "description": "Implement the ExternalDb, Xref, and ObjectXref SQLModel table models with correct column mappings, enum types, nullable constraints, and the Xref->ExternalDb and ObjectXref->Xref many-to-one relationships.",
         "status": "done",
@@ -462,7 +462,7 @@
         "updatedAt": "2026-05-22T07:52:39.346Z"
       },
       {
-        "id": 15,
+        "id": "15",
         "title": "SeqRegionAttrib and Karyotype model implementations",
         "description": "Implement the SeqRegionAttrib model with composite primary key and the Karyotype model with its SeqRegion relationship, completing all 7 Ensembl table mappings.",
         "status": "done",
@@ -543,10 +543,10 @@
         "updatedAt": "2026-05-22T08:13:36.754Z"
       },
       {
-        "id": 16,
+        "id": "16",
         "title": "Integration verification, public API finalization, and documentation",
         "description": "Finalize the public API exports in __init__.py, verify all models import correctly, run full test suite, apply linting/formatting with ruff, write README.md with installation and usage examples, and ensure package is installable as a git-source dependency.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "15"
         ],
@@ -661,19 +661,18 @@
         ],
         "complexity": 7,
         "recommendedSubtasks": 8,
-        "expansionPrompt": "Decompose task 16 \"Integration verification, public API finalization, and documentation\" into 8 ordered subtasks. Suggested breakdown: (1) finalize src/ensembl_orm/__init__.py public API and __all__; (2) finalize src/ensembl_orm/models/__init__.py exports and forward-reference handling; (3) add or refine shared pytest fixtures in tests/conftest.py (mock_settings, mock_engine, etc.); (4) run ruff check and ruff format on src/ and tests/, applying fixes; (5) run the full pytest suite and address any integration issues; (6) verify package metadata in pyproject.toml (name, version, dependencies, classifiers) and that the package is installable as a git-source dependency; (7) write or update README.md with installation, configuration, and usage examples aligning with the final API; (8) perform a final smoke test (`import ensembl_orm`, basic SQLModel query construction) and document any remaining limitations. Ensure each subtask has clear acceptance criteria and references the specific files it touches."
+        "expansionPrompt": "Decompose task 16 \"Integration verification, public API finalization, and documentation\" into 8 ordered subtasks. Suggested breakdown: (1) finalize src/ensembl_orm/__init__.py public API and __all__; (2) finalize src/ensembl_orm/models/__init__.py exports and forward-reference handling; (3) add or refine shared pytest fixtures in tests/conftest.py (mock_settings, mock_engine, etc.); (4) run ruff check and ruff format on src/ and tests/, applying fixes; (5) run the full pytest suite and address any integration issues; (6) verify package metadata in pyproject.toml (name, version, dependencies, classifiers) and that the package is installable as a git-source dependency; (7) write or update README.md with installation, configuration, and usage examples aligning with the final API; (8) perform a final smoke test (`import ensembl_orm`, basic SQLModel query construction) and document any remaining limitations. Ensure each subtask has clear acceptance criteria and references the specific files it touches.",
+        "updatedAt": "2026-05-22T08:36:31.187Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-22T08:13:36.754Z",
+      "lastModified": "2026-05-22T08:36:31.187Z",
       "taskCount": 8,
       "completedCount": 7,
       "tags": [
         "master"
-      ],
-      "created": "2026-05-22T08:30:09.362Z",
-      "description": "Tasks for master context"
+      ]
     }
   }
 }
