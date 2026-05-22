@@ -25,6 +25,7 @@ dev = [
     "ruff>=0.15.12",
 ]
 
+
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = ["tests"]
