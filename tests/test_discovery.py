@@ -23,7 +23,7 @@ class TestFetchReleaseVersion:
         with patch("ensembl_orm.discovery.urlopen", return_value=mock_body):
             result = _fetch_release_version()
 
-        assert result is 112
+        assert result == 112
 
     def test_raises_discovery_error_on_url_error(self):
         """URLError from urlopen is wrapped in EnsemblDiscoveryError."""
@@ -66,7 +66,7 @@ class TestFetchReleaseVersion:
         with patch("ensembl_orm.discovery.urlopen", return_value=mock_body):
             result = _fetch_release_version()
 
-        assert result is 115
+        assert result == 115
 
 
 class TestResolveDatabaseName:
@@ -138,10 +138,12 @@ class TestResolveDatabaseName:
         """When multiple databases match, the lexicographically first is returned."""
         from ensembl_orm.discovery import _resolve_database_name
 
-        mock_engine = self._make_mock_engine([
-            "homo_sapiens_core_112_39",
-            "homo_sapiens_core_112_38",
-        ])
+        mock_engine = self._make_mock_engine(
+            [
+                "homo_sapiens_core_112_39",
+                "homo_sapiens_core_112_38",
+            ]
+        )
 
         with patch("ensembl_orm.discovery.create_engine", return_value=mock_engine):
             result = _resolve_database_name(settings, 112)
@@ -154,20 +156,23 @@ class TestResolveDatabaseName:
 
         from ensembl_orm.discovery import _resolve_database_name
 
-        mock_engine = self._make_mock_engine([
-            "homo_sapiens_core_112_39",
-            "homo_sapiens_core_112_38",
-        ])
+        mock_engine = self._make_mock_engine(
+            [
+                "homo_sapiens_core_112_39",
+                "homo_sapiens_core_112_38",
+            ]
+        )
 
-        with patch("ensembl_orm.discovery.create_engine", return_value=mock_engine), \
-             caplog.at_level(logging.WARNING, logger="ensembl_orm"):
+        with (
+            patch("ensembl_orm.discovery.create_engine", return_value=mock_engine),
+            caplog.at_level(logging.WARNING, logger="ensembl_orm"),
+        ):
             _resolve_database_name(settings, 112)
 
         assert any("Multiple databases matched" in record.message for record in caplog.records)
 
     def test_show_databases_called_with_correct_pattern(self, settings):
         """SHOW DATABASES LIKE is called with the correct version-based pattern."""
-        from sqlalchemy import text
 
         from ensembl_orm.discovery import _resolve_database_name
 
@@ -180,8 +185,9 @@ class TestResolveDatabaseName:
         call_args = mock_conn.execute.call_args
         compiled = call_args[0][0].text
         assert "SHOW DATABASES LIKE" in compiled
-        assert call_args[0][1] == {"pattern": "homo_sapiens_core_112%"} or \
-               call_args[1].get("parameters") == {"pattern": "homo_sapiens_core_112%"}
+        assert call_args[0][1] == {"pattern": "homo_sapiens_core_112%"} or call_args[1].get("parameters") == {
+            "pattern": "homo_sapiens_core_112%"
+        }
 
 
 class TestDiscoverDatabaseName:
@@ -209,8 +215,10 @@ class TestDiscoverDatabaseName:
 
         disc._cached_database_name = "cached_db"
 
-        with patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch, \
-             patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve:
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch,
+            patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve,
+        ):
             result = disc.discover_database_name(settings)
 
         assert result == "cached_db"
@@ -222,12 +230,17 @@ class TestDiscoverDatabaseName:
         from ensembl_orm.config.database_settings import DatabaseSettings
 
         override_settings = DatabaseSettings(
-            host="localhost", port=3306, user="testuser", password="testpass",
+            host="localhost",
+            port=3306,
+            user="testuser",
+            password="testpass",
             database="my_custom_db",
         )
 
-        with patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch, \
-             patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve:
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch,
+            patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve,
+        ):
             import ensembl_orm.discovery as disc
 
             result = disc.discover_database_name(override_settings)
@@ -240,8 +253,12 @@ class TestDiscoverDatabaseName:
         """On cache miss with no override, call both helpers and cache result."""
         import ensembl_orm.discovery as disc
 
-        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112) as mock_fetch, \
-             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38") as mock_resolve:
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version", return_value=112) as mock_fetch,
+            patch(
+                "ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"
+            ) as mock_resolve,
+        ):
             result = disc.discover_database_name(settings)
 
         assert result == "homo_sapiens_core_112_38"
@@ -253,12 +270,16 @@ class TestDiscoverDatabaseName:
         """A subsequent call uses the cached value and skips I/O."""
         import ensembl_orm.discovery as disc
 
-        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112), \
-             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"):
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version", return_value=112),
+            patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"),
+        ):
             disc.discover_database_name(settings)
 
-        with patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch, \
-             patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve:
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version") as mock_fetch,
+            patch("ensembl_orm.discovery._resolve_database_name") as mock_resolve,
+        ):
             result = disc.discover_database_name(settings)
 
         assert result == "homo_sapiens_core_112_38"
@@ -279,9 +300,11 @@ class TestDiscoverDatabaseName:
 
         import ensembl_orm.discovery as disc
 
-        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112), \
-             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"), \
-             caplog.at_level(logging.INFO, logger="ensembl_orm"):
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version", return_value=112),
+            patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"),
+            caplog.at_level(logging.INFO, logger="ensembl_orm"),
+        ):
             disc.discover_database_name(settings)
 
         messages = [r.message for r in caplog.records]
@@ -317,15 +340,19 @@ class TestResetCache:
 
         settings = DatabaseSettings(host="localhost", port=3306, user="testuser", password="testpass")
 
-        with patch("ensembl_orm.discovery._fetch_release_version", return_value=112) as mock_fetch, \
-             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"):
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version", return_value=112) as mock_fetch,
+            patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_112_38"),
+        ):
             disc.discover_database_name(settings)
 
         assert mock_fetch.call_count == 1
         disc.reset_cache()
 
-        with patch("ensembl_orm.discovery._fetch_release_version", return_value=113) as mock_fetch2, \
-             patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_113_38"):
+        with (
+            patch("ensembl_orm.discovery._fetch_release_version", return_value=113) as mock_fetch2,
+            patch("ensembl_orm.discovery._resolve_database_name", return_value="homo_sapiens_core_113_38"),
+        ):
             result = disc.discover_database_name(settings)
 
         assert result == "homo_sapiens_core_113_38"

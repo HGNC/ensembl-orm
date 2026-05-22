@@ -1,7 +1,5 @@
 """Tests for the enum definitions mapping to MySQL ENUM columns."""
 
-from enum import unique
-
 import pytest
 from sqlalchemy import Column, Enum as SAEnum, MetaData, String, Table
 
@@ -13,7 +11,7 @@ class TestEnsemblObjectTypeMembers:
 
     def test_has_exactly_three_members(self):
         """EnsemblObjectType defines three members."""
-        assert len(EnsemblObjectType) is 3
+        assert len(EnsemblObjectType) == 3
 
     def test_member_names(self):
         """Member names are GENE, TRANSCRIPT, TRANSLATION."""
@@ -46,7 +44,7 @@ class TestExternalDbStatusMembers:
 
     def test_has_exactly_four_members(self):
         """ExternalDbStatus defines four members."""
-        assert len(ExternalDbStatus) is 4
+        assert len(ExternalDbStatus) == 4
 
     def test_member_names(self):
         """Member names are KNOWN, XREF, DUMPED, DEPENDENT."""
@@ -77,7 +75,7 @@ class TestInfoTypeMembers:
     """Verify InfoType exposes the correct members and values."""
 
     def test_has_exactly_eight_members(self):
-        assert len(InfoType) is 8
+        assert len(InfoType) == 8
 
     def test_member_names(self):
         expected = {"NONE", "PROBE", "DEPENDENT", "DIRECT", "INFERRED_PAIR", "PROBE2TRANSCRIPT", "UNMAPPED", "CHECKSUM"}
@@ -120,7 +118,7 @@ class TestExternalDbTypeMembers:
     """Verify ExternalDbType exposes the correct members and values."""
 
     def test_has_exactly_six_members(self):
-        assert len(ExternalDbType) is 6
+        assert len(ExternalDbType) == 6
 
     def test_member_names(self):
         expected = {"PRIMARY", "SECONDARY", "MISC", "CHECKSUM", "DEPENDENT", "IMAGE_DEPICTION"}
@@ -235,22 +233,22 @@ class TestIteration:
 
     def test_ensembl_object_type_iteration(self):
         members = list(EnsemblObjectType)
-        assert len(members) is 3
+        assert len(members) == 3
         assert EnsemblObjectType.GENE in members
 
     def test_external_db_status_iteration(self):
         members = list(ExternalDbStatus)
-        assert len(members) is 4
+        assert len(members) == 4
         assert ExternalDbStatus.KNOWN in members
 
     def test_info_type_iteration(self):
         members = list(InfoType)
-        assert len(members) is 8
+        assert len(members) == 8
         assert InfoType.NONE in members
 
     def test_external_db_type_iteration(self):
         members = list(ExternalDbType)
-        assert len(members) is 6
+        assert len(members) == 6
         assert ExternalDbType.PRIMARY in members
 
 

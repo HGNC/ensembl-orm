@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 
 from ensembl_orm.config.database_settings import DatabaseSettings

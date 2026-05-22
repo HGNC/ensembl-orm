@@ -56,8 +56,10 @@ class TestInitializeEngine:
         empty_settings = DatabaseSettings(host="localhost", port=3306, user="testuser", password="testpass")
         mock_engine = MagicMock()
 
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine), \
-             patch("ensembl_orm.session.discover_database_name", return_value="discovered_db") as mock_discover:
+        with (
+            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
+            patch("ensembl_orm.session.discover_database_name", return_value="discovered_db") as mock_discover,
+        ):
             initialize_engine(empty_settings)
 
         mock_discover.assert_called_once_with(empty_settings)
@@ -68,8 +70,10 @@ class TestInitializeEngine:
         from ensembl_orm.session import initialize_engine
 
         mock_engine = MagicMock()
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine), \
-             patch("ensembl_orm.session.discover_database_name") as mock_discover:
+        with (
+            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
+            patch("ensembl_orm.session.discover_database_name") as mock_discover,
+        ):
             initialize_engine(settings)
 
         mock_discover.assert_not_called()
@@ -90,8 +94,10 @@ class TestInitializeEngine:
         from ensembl_orm.session import initialize_engine
 
         mock_engine = MagicMock()
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine), \
-             patch("ensembl_orm.session.discover_database_name", return_value="auto_db"):
+        with (
+            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
+            patch("ensembl_orm.session.discover_database_name", return_value="auto_db"),
+        ):
             engine = initialize_engine(None)
 
         assert engine is mock_engine
@@ -101,8 +107,10 @@ class TestInitializeEngine:
         from ensembl_orm.session import initialize_engine
 
         mock_engine = MagicMock()
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine), \
-             caplog.at_level(logging.DEBUG, logger="ensembl_orm"):
+        with (
+            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
+            caplog.at_level(logging.DEBUG, logger="ensembl_orm"),
+        ):
             initialize_engine(settings)
 
         log_messages = [r.message for r in caplog.records]
@@ -174,7 +182,7 @@ class TestGetSession:
         with patch("ensembl_orm.session.Session") as mock_session_cls:
             mock_session = MagicMock()
             mock_session_cls.return_value = mock_session
-            with get_session() as session:
+            with get_session():
                 pass
 
         calls = mock_session.exec.call_args_list
