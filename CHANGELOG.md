@@ -1,9 +1,16 @@
 # CHANGELOG
 
 
+## v0.3.0 (2026-05-22)
+
+
 ## v0.2.0 (2026-05-22)
 
 ### Features
+
+- Add initial documentation files for API, configuration, development workflow, installation,
+  querying, models, testing, and styles
+  ([`a6f7550`](https://github.com/HGNC/ensembl-orm/commit/a6f7550eebd7f62fb73e6f7f65df91753fb022c2))
 
 - Add MkDocs configuration for project documentation
   ([`13a5274`](https://github.com/HGNC/ensembl-orm/commit/13a52747d2d4f61c6af2a8c0966df604d4fe0072))
