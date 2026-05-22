@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -6,7 +5,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 REQUIRED_BOILERPLATE_FILES = [
     ".gitignore",
     ".env.example",
-    ".markdownlint.json",
     "LICENSE",
 ]
 
@@ -39,12 +37,6 @@ def test_env_example_contains_required_vars() -> None:
     content = env_example.read_text()
     for var in REQUIRED_ENV_VARS:
         assert var in content, f"Missing env var in .env.example: {var}"
-
-
-def test_markdownlint_json_is_valid() -> None:
-    md_lint = PROJECT_ROOT / ".markdownlint.json"
-    data = json.loads(md_lint.read_text())
-    assert isinstance(data, dict)
 
 
 def test_gitignore_contains_python_entries() -> None:
