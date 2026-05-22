@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.2.0 (2026-05-22)
+
+### Features
+
+- Add MkDocs configuration for project documentation
+  ([`13a5274`](https://github.com/HGNC/ensembl-orm/commit/13a52747d2d4f61c6af2a8c0966df604d4fe0072))
+
+
 ## v0.1.0 (2026-05-22)
 
 ### Bug Fixes
@@ -15,6 +23,9 @@
   ([`035594d`](https://github.com/HGNC/ensembl-orm/commit/035594d8a446dc88a88a140264f782c7bdffd76a))
 
 ### Chores
+
+- Remove CI badge links from README.md
+  ([`c3935ed`](https://github.com/HGNC/ensembl-orm/commit/c3935ed6354570f97dceb389972e2507adae2d28))
 
 - Update task 13 status
   ([`6db9229`](https://github.com/HGNC/ensembl-orm/commit/6db92297f12c1e69c5f1713a6ae3ddefd0ab3f05))
@@ -239,3 +250,8 @@ Tests: 40 passing, 0 failing
 
 - **tests**: Add DatabaseSettings tests and shared pytest fixtures
   ([`b4210ff`](https://github.com/HGNC/ensembl-orm/commit/b4210ff25ab87a72c810970eb49d8b7df1dce5ce))
+
+### Refactoring
+
+- Remove unused markdownlint JSON validation from tests
+  ([`e499f9f`](https://github.com/HGNC/ensembl-orm/commit/e499f9f32b0ad56838fbcff9896fcddff5537ea7))
