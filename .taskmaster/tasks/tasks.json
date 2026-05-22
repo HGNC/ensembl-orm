@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": 9,
+        "id": "9",
         "title": "Project scaffolding and DatabaseSettings configuration",
         "description": "Create the project directory structure, pyproject.toml with all dependencies, and implement the DatabaseSettings Pydantic BaseSettings class with ENSEMBLDB_ prefixed environment variable support. Includes custom exceptions module, __init__.py public API stubs, and all project boilerplate files.",
         "status": "done",
@@ -82,7 +82,7 @@
         "updatedAt": "2026-05-21T15:42:54.576Z"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Database discovery module implementation",
         "description": "Implement the discover_database_name() function in discovery.py that dynamically resolves the current Ensembl homo_sapiens_core database name by fetching the release version from the Ensembl FTP server and querying MySQL with SHOW DATABASES LIKE pattern. Includes in-memory caching and error handling.",
         "status": "done",
@@ -165,7 +165,7 @@
         "updatedAt": "2026-05-21T15:41:33.696Z"
       },
       {
-        "id": 11,
+        "id": "11",
         "title": "Session management implementation",
         "description": "Implement session.py with the four public functions (initialize_engine, get_engine, get_session, close_all_sessions) providing read-only session management with connection pooling, integrating with DatabaseSettings and the discovery module.",
         "status": "done",
@@ -268,7 +268,7 @@
         "updatedAt": "2026-05-21T15:49:55.550Z"
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Enum definitions for Ensembl column types",
         "description": "Define the four StrEnum classes (EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType) that map to MySQL ENUM columns in the Ensembl database, placed in enums.py.",
         "status": "done",
@@ -310,7 +310,7 @@
         "updatedAt": "2026-05-21T16:51:59.674Z"
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "Gene and SeqRegion model implementations",
         "description": "Implement the Gene and SeqRegion SQLModel table models with correct column mappings, types, nullable constraints, and the Gene->SeqRegion many-to-one relationship.",
         "status": "done",
@@ -381,10 +381,10 @@
         "updatedAt": "2026-05-21T16:50:28.032Z"
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "Xref, ObjectXref, and ExternalDb model implementations",
         "description": "Implement the ExternalDb, Xref, and ObjectXref SQLModel table models with correct column mappings, enum types, nullable constraints, and the Xref->ExternalDb and ObjectXref->Xref many-to-one relationships.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "13"
         ],
@@ -453,10 +453,11 @@
         ],
         "complexity": 7,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Decompose task 14 \"Xref, ObjectXref, and ExternalDb model implementations\" into 5 subtasks. Cover: (1) write failing tests for all three models with metadata assertions and enum behavior checks using concrete module imports only; (2) implement ExternalDb model with enum-backed status/type fields; (3) implement Xref model with ForeignKey to external_db, InfoType enum, and relationship to ExternalDb; (4) implement ObjectXref model with ForeignKey to xref, EnsemblObjectType enum, relationship to Xref, and schema verification checkpoint for linkage_type; (5) update models/__init__.py to export all five models and run full test suite with package-level import validation."
+        "expansionPrompt": "Decompose task 14 \"Xref, ObjectXref, and ExternalDb model implementations\" into 5 subtasks. Cover: (1) implement ExternalDb model with enum-backed status/type fields; (2) implement Xref model, including ForeignKey to external_db.external_db_id, InfoType enum usage, and relationship to ExternalDb; (3) implement ObjectXref model with ForeignKey to xref.xref_id, EnsemblObjectType enum, and relationship to Xref; (4) update models/__init__.py to export all three models and handle any forward references; (5) create tests/models/test_external_db.py, tests/models/test_xref.py, and tests/models/test_object_xref.py to validate tablenames, columns, enums, relationships, and nullability. Ensure subtasks are ordered to satisfy model dependencies.",
+        "updatedAt": "2026-05-22T07:43:21.479Z"
       },
       {
-        "id": 15,
+        "id": "15",
         "title": "SeqRegionAttrib and Karyotype model implementations",
         "description": "Implement the SeqRegionAttrib model with composite primary key and the Karyotype model with its SeqRegion relationship, completing all 7 Ensembl table mappings.",
         "status": "pending",
@@ -531,7 +532,7 @@
         "expansionPrompt": "Decompose task 15 \"SeqRegionAttrib and Karyotype model implementations\" into 5 subtasks. Include: (1) implement SeqRegionAttrib with the composite primary key via __table_args__; (2) implement Karyotype with ForeignKey to seq_region.seq_region_id and the seq_region Relationship; (3) update models/__init__.py to export SeqRegionAttrib and Karyotype plus any required forward-reference resolution; (4) write tests/models/test_seq_region_attrib.py for tablename, composite PK, and column types; (5) write tests/models/test_karyotype.py for tablename, columns, nullability, and SeqRegion relationship. Explicitly call out dependencies on the existing SeqRegion model."
       },
       {
-        "id": 16,
+        "id": "16",
         "title": "Integration verification, public API finalization, and documentation",
         "description": "Finalize the public API exports in __init__.py, verify all models import correctly, run full test suite, apply linting/formatting with ruff, write README.md with installation and usage examples, and ensure package is installable as a git-source dependency.",
         "status": "pending",
@@ -656,14 +657,12 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-21T16:51:59.674Z",
+      "lastModified": "2026-05-22T07:43:21.479Z",
       "taskCount": 8,
       "completedCount": 5,
       "tags": [
         "master"
-      ],
-      "created": "2026-05-22T07:34:58.351Z",
-      "description": "Tasks for master context"
+      ]
     }
   }
 }
