@@ -185,7 +185,7 @@ class TestGetSession:
             with get_session():
                 pass
 
-        calls = mock_session.exec.call_args_list
+        calls = mock_session.execute.call_args_list
         assert len(calls) >= 1
         executed_sql = [c[0][0].text for c in calls]
         assert "SET SESSION TRANSACTION READ ONLY" in executed_sql

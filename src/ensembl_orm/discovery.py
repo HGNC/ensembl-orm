@@ -57,14 +57,13 @@ def _resolve_database_name(settings: DatabaseSettings, version: int) -> str:
     try:
         with engine.connect() as conn:
             result = conn.execute(text("SHOW DATABASES LIKE :pattern"), {"pattern": pattern})
-            matches = [row[0] for row in result]
+            matches = sorted(str(row[0]) for row in result)
     finally:
         engine.dispose()
 
     if not matches:
         raise EnsemblDiscoveryError(f"No database matching pattern '{pattern}' found")
 
-    matches.sort()
     if len(matches) > 1:
         logger.warning("Multiple databases matched: %s. Using first: %s", matches, matches[0])
 

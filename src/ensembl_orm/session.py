@@ -85,7 +85,7 @@ def get_session() -> Generator[Session, None, None]:
     engine = get_engine()
     session = Session(engine)
     try:
-        session.exec(text("SET SESSION TRANSACTION READ ONLY"))
+        session.execute(text("SET SESSION TRANSACTION READ ONLY"))
         yield session
     finally:
         session.close()

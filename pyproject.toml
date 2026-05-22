@@ -18,7 +18,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "mypy>=1.15.0",
     "pytest>=9.0.3",
+    "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
     "ruff>=0.15.12",
 ]
@@ -31,6 +33,17 @@ pythonpath = ["src"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/ensembl_orm"]
 
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+
 [tool.ruff]
 line-length = 120
 target-version = "py313"
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+build_command = "uv build"
+commit_message = "chore(release): {version} [skip ci]"
