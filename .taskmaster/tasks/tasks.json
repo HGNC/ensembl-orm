@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "9",
+        "id": 9,
         "title": "Project scaffolding and DatabaseSettings configuration",
         "description": "Create the project directory structure, pyproject.toml with all dependencies, and implement the DatabaseSettings Pydantic BaseSettings class with ENSEMBLDB_ prefixed environment variable support. Includes custom exceptions module, __init__.py public API stubs, and all project boilerplate files.",
         "status": "done",
@@ -82,7 +82,7 @@
         "updatedAt": "2026-05-21T15:42:54.576Z"
       },
       {
-        "id": "10",
+        "id": 10,
         "title": "Database discovery module implementation",
         "description": "Implement the discover_database_name() function in discovery.py that dynamically resolves the current Ensembl homo_sapiens_core database name by fetching the release version from the Ensembl FTP server and querying MySQL with SHOW DATABASES LIKE pattern. Includes in-memory caching and error handling.",
         "status": "done",
@@ -165,7 +165,7 @@
         "updatedAt": "2026-05-21T15:41:33.696Z"
       },
       {
-        "id": "11",
+        "id": 11,
         "title": "Session management implementation",
         "description": "Implement session.py with the four public functions (initialize_engine, get_engine, get_session, close_all_sessions) providing read-only session management with connection pooling, integrating with DatabaseSettings and the discovery module.",
         "status": "done",
@@ -268,7 +268,7 @@
         "updatedAt": "2026-05-21T15:49:55.550Z"
       },
       {
-        "id": "12",
+        "id": 12,
         "title": "Enum definitions for Ensembl column types",
         "description": "Define the four StrEnum classes (EnsemblObjectType, ExternalDbStatus, InfoType, ExternalDbType) that map to MySQL ENUM columns in the Ensembl database, placed in enums.py.",
         "status": "done",
@@ -310,7 +310,7 @@
         "updatedAt": "2026-05-21T16:51:59.674Z"
       },
       {
-        "id": "13",
+        "id": 13,
         "title": "Gene and SeqRegion model implementations",
         "description": "Implement the Gene and SeqRegion SQLModel table models with correct column mappings, types, nullable constraints, and the Gene->SeqRegion many-to-one relationship.",
         "status": "done",
@@ -381,7 +381,7 @@
         "updatedAt": "2026-05-21T16:50:28.032Z"
       },
       {
-        "id": "14",
+        "id": 14,
         "title": "Xref, ObjectXref, and ExternalDb model implementations",
         "description": "Implement the ExternalDb, Xref, and ObjectXref SQLModel table models with correct column mappings, enum types, nullable constraints, and the Xref->ExternalDb and ObjectXref->Xref many-to-one relationships.",
         "status": "done",
@@ -462,7 +462,7 @@
         "updatedAt": "2026-05-22T07:52:39.346Z"
       },
       {
-        "id": "15",
+        "id": 15,
         "title": "SeqRegionAttrib and Karyotype model implementations",
         "description": "Implement the SeqRegionAttrib model with composite primary key and the Karyotype model with its SeqRegion relationship, completing all 7 Ensembl table mappings.",
         "status": "done",
@@ -543,7 +543,7 @@
         "updatedAt": "2026-05-22T08:13:36.754Z"
       },
       {
-        "id": "16",
+        "id": 16,
         "title": "Integration verification, public API finalization, and documentation",
         "description": "Finalize the public API exports in __init__.py, verify all models import correctly, run full test suite, apply linting/formatting with ruff, write README.md with installation and usage examples, and ensure package is installable as a git-source dependency.",
         "status": "pending",
@@ -578,10 +578,7 @@
             "id": 3,
             "title": "Add and refine shared pytest fixtures in tests/conftest.py for DB and discovery mocking",
             "description": "Define reusable pytest fixtures in tests/conftest.py to provide mock DatabaseSettings, engine, session, and discovery responses so tests and smoke checks can run without connecting to a real Ensembl database.",
-            "dependencies": [
-              1,
-              2
-            ],
+            "dependencies": [],
             "details": "Edit or create tests/conftest.py with fixtures such as:\n- mock_settings: returns a DatabaseSettings instance pointed at a fake host/database or uses monkeypatch to override environment variables.\n- mock_engine: provides a mocked SQLAlchemy engine (e.g., using create_engine with an in-memory SQLite URL or a MagicMock) that mimics the required interface.\n- mock_session: yields a SQLModel Session or mock session object bound to mock_engine.\n- mock_version_response: mocks the response of any version-discovery query (e.g., SHOW VARIABLES LIKE or SELECT VERSION()).\n- mock_show_databases_result: mocks the SHOW DATABASES query used by discover_database_name so tests do not hit a real MySQL instance.\nEnsure all fixtures are placed in tests/conftest.py to be globally available.\nAcceptance criteria:\n- Existing and new tests that rely on DB interactions can run without a live database.\n- discover_database_name and session-related code paths can be tested using these fixtures.\n- No test opens a real network connection to ensembldb.ensembl.org when using the default test configuration.",
             "status": "pending",
             "testStrategy": "Write or adjust tests under tests/ (for discovery and session modules) to depend on these fixtures. Run `uv run pytest tests/ -k 'discovery or session'` and confirm they pass while logging or monitoring to ensure no external DB connections are attempted.",
@@ -611,7 +608,7 @@
               3,
               4
             ],
-            "details": "From the project root, run `uv run pytest tests/ -v --tb=short`.\nInvestigate and fix any failing tests or errors, focusing on:\n- Import paths using the finalized public API (ensembl_orm and ensembl_orm.models).\n- Tests that require updated fixtures from tests/conftest.py.\n- Model relationship definitions and metadata consistency (e.g., Gene.seq_region foreign key definitions).\n- Any regressions introduced by refactoring or formatting.\nIterate until the full test run is green.\nAcceptance criteria:\n- `uv run pytest tests/ -v --tb=short` completes successfully with exit code 0.\n- No tests are skipped due to missing fixtures or misconfigured imports, unless explicitly and intentionally marked xfail/skip with justification.\n- Coverage of API surface (config, session, discovery, models) is consistent with the project’s expectations.",
+            "details": "From the project root, run `uv run pytest tests/ -v --tb=short`.\nInvestigate and fix any failing tests or errors, focusing on:\n- Import paths using the finalized public API (ensembl_orm and ensembl_orm.models).\n- Tests that require updated fixtures from tests/conftest.py.\n- Model relationship definitions and metadata consistency (e.g., Gene.seq_region foreign key definitions).\n- Any regressions introduced by refactoring or formatting.\nIterate until the full test run is green.\nAcceptance criteria:\n- `uv run pytest tests/ -v --tb=short` completes successfully with exit code 0.\n- No tests are skipped due to missing fixtures or misconfigured imports, unless explicitly and intentionally marked xfail/skip with justification.\n- Coverage of API surface (config, session, discovery, models) is consistent with the project’s expectations.\n<info added on 2026-05-22T08:30:37.790Z>\nQuality gate requirement: Create a dedicated public API export contract test file at tests/test_public_api_exports.py that validates the public API surface. This test must assert that sorted(ensembl_orm.__all__) exactly matches the intended exported symbol set and verify each symbol listed in __all__ is importable directly from ensembl_orm. This test acts as a required pass condition and must be green before subtask 16.5 can be closed, ensuring no silent API drift occurs during refactoring. Add this to the acceptance criteria: tests/test_public_api_exports.py passes and any mismatch between __all__ and the expected symbol set fails the build.\n</info added on 2026-05-22T08:30:37.790Z>",
             "status": "pending",
             "testStrategy": "Rely on the full pytest run as the primary test. Optionally enable coverage measurement (e.g., `pytest --cov=ensembl_orm`) to ensure key modules are exercised, and re-run focused subsets of tests when addressing specific failures to speed up the feedback loop.",
             "parentId": "undefined"
@@ -623,7 +620,7 @@
             "dependencies": [
               5
             ],
-            "details": "Open pyproject.toml and verify that:\n- The [project] table includes correct name, version, description, authors, license, readme, dependencies, and Python version (>=3.13).\n- Optional dev dependencies (pytest, pytest-mock, ruff, etc.) are correctly listed under the appropriate section.\n- Classifiers, URLs, and package layout (src/ensembl_orm) are correctly configured.\nThen test installation:\n- Use a local path or test repository URL to run `uv add --dev git+<repo-url>#egg=ensembl-orm` or equivalent pip command, ensuring the package installs and exposes the ensembl_orm top-level package.\nAcceptance criteria:\n- pyproject.toml passes any basic validation (e.g., `uv build` or `python -m build` succeeds if used).\n- Installing from a git URL or local VCS checkout results in a working environment where `python -c \"import ensembl_orm\"` succeeds.\n- The installed package version and metadata match expectations when inspected via `import importlib.metadata` or `pip show ensembl-orm`.",
+            "details": "Open pyproject.toml and verify that:\n- The [project] table includes correct name, version, description, authors, license, readme, dependencies, and Python version (>=3.13).\n- Optional dev dependencies (pytest, pytest-mock, ruff, etc.) are correctly listed under the appropriate section.\n- Classifiers, URLs, and package layout (src/ensembl_orm) are correctly configured.\nThen test installation:\n- Use a local path or test repository URL to run `uv add --dev git+<repo-url>#egg=ensembl-orm` or equivalent pip command, ensuring the package installs and exposes the ensembl_orm top-level package.\nAcceptance criteria:\n- pyproject.toml passes any basic validation (e.g., `uv build` or `python -m build` succeeds if used).\n- Installing from a git URL or local VCS checkout results in a working environment where `python -c \"import ensembl_orm\"` succeeds.\n- The installed package version and metadata match expectations when inspected via `import importlib.metadata` or `pip show ensembl-orm`.\n<info added on 2026-05-22T08:30:55.701Z>\nQuality gate addition: git-source installability verification must be performed in a completely isolated temporary environment that does not modify this repository's pyproject.toml, lockfiles, or local dependency graph. Steps: Create a temporary directory outside the repository workspace (e.g., mktemp -d). Within that directory, run `uv venv` to create an isolated virtual environment, then activate it and execute `uv pip install 'git+<repo-url>'` or install from a local VCS checkout path. After installation, verify the package works by running `python -c \"import ensembl_orm\"` and confirm installed package version and metadata match expectations via `importlib.metadata` or `pip show ensembl-orm`. Once verification is complete, remove the temporary directory. Failure condition: any mutation to the repository's pyproject.toml, uv.lock, or local dependency graph as a result of the install validation steps constitutes a test failure.\n</info added on 2026-05-22T08:30:55.701Z>",
             "status": "pending",
             "testStrategy": "Use a clean virtual environment to run an install from the git URL or local repository. After installation, run `python -c \"import ensembl_orm; print(ensembl_orm.__doc__[:60])\"` to confirm importability and inspect installed metadata using `python -c \"import importlib.metadata as m; print(m.metadata('ensembl-orm')['Version'])\"`.",
             "parentId": "undefined"
@@ -635,9 +632,10 @@
             "dependencies": [
               1,
               2,
+              5,
               6
             ],
-            "details": "Edit README.md at the project root to include:\n- A clear project description summarizing ensembl_orm as a read-only SQLModel ORM for the Ensembl homo_sapiens_core MySQL database.\n- Installation instructions using git-source dependency syntax for uv (and optionally pip), referencing the correct project name and minimum Python version.\n- A quick-start usage example that imports from ensembl_orm using the finalized API (e.g., DatabaseSettings, initialize_engine, get_session, Gene) and demonstrates a simple read-only query.\n- A configuration section with a table documenting ENSEMBLDB_ environment variables used by DatabaseSettings, including defaults and meanings.\n- A development setup section describing how to create a virtual environment, install dev dependencies, run ruff, and run pytest.\n- A license section stating that the project uses the MIT license.\nAcceptance criteria:\n- README.md renders cleanly in Markdown viewers and contains no references to outdated module paths or APIs.\n- The quick-start code block runs successfully when copied into a Python file in a correctly configured environment.\n- Installation and configuration instructions align with pyproject.toml settings and actual behavior of DatabaseSettings and session helpers.",
+            "details": "Edit README.md at the project root to include:\n- A clear project description summarizing ensembl_orm as a read-only SQLModel ORM for the Ensembl homo_sapiens_core MySQL database.\n- Installation instructions using git-source dependency syntax for uv (and optionally pip), referencing the correct project name and minimum Python version.\n- A quick-start usage example that imports from ensembl_orm using the finalized API (e.g., DatabaseSettings, initialize_engine, get_session, Gene) and demonstrates a simple read-only query.\n- A configuration section with a table documenting ENSEMBLDB_ environment variables used by DatabaseSettings, including defaults and meanings.\n- A development setup section describing how to create a virtual environment, install dev dependencies, run ruff, and run pytest.\n- A license section stating that the project uses the MIT license.\nAcceptance criteria:\n- README.md renders cleanly in Markdown viewers and contains no references to outdated module paths or APIs.\n- The quick-start code block runs successfully when copied into a Python file in a correctly configured environment.\n- Installation and configuration instructions align with pyproject.toml settings and actual behavior of DatabaseSettings and session helpers.\n<info added on 2026-05-22T08:31:18.110Z>\nQuality gate addition: before this subtask can be marked complete, explicitly run markdown lint against README.md and verify it passes all rules defined in the repository `.markdownlint.json` configuration without errors. This validation must occur after all post-integration tests have passed so that the documented API surface accurately reflects any changes driven by test results. Add the following acceptance criteria: markdownlint CLI or equivalent linter executes against README.md with zero violations according to `.markdownlint.json` rules. This subtask remains blocked on successful completion of the integration test suite to ensure documentation aligns with the finalized, tested API.\n</info added on 2026-05-22T08:31:18.110Z>",
             "status": "pending",
             "testStrategy": "Manually render README.md in a Markdown preview (IDE or Git hosting platform) to verify formatting. Copy-paste the quick-start example into a fresh environment where ensembl_orm is installed from git and execute it (with mocked or safe DB settings) to confirm it runs without import errors.",
             "parentId": "undefined"
@@ -655,7 +653,7 @@
               6,
               7
             ],
-            "details": "In a clean environment where the package has been installed from the git source, perform the following:\n- Start a Python REPL or script and run `import ensembl_orm`.\n- Verify access to key exports: DatabaseSettings, initialize_engine, get_engine, get_session, close_all_sessions, discover_database_name, EnsemblDiscoveryError, EnsemblSessionError, and core models like Gene and SeqRegion via both `ensembl_orm.Gene` and `from ensembl_orm import Gene`.\n- Using a mocked or in-memory engine/session (e.g., via the fixtures design), construct a simple SQLModel query such as a select on Gene filtered by gene_id and ensure it compiles or executes against the mock backend without raising ORM-level errors.\n- Confirm that import and basic usage do not trigger unintended side effects like immediate real DB connections.\n- Note any remaining limitations or TODOs (e.g., unsupported tables, partial relationship coverage) and, if appropriate, add a short “Limitations / Future work” section in README.md or project documentation.\nAcceptance criteria:\n- All symbols listed in ensembl_orm.__all__ are importable and usable without AttributeError.\n- Basic SQLModel queries involving the public models can be constructed and run against a test or mocked backend without schema mismatches.\n- Any known limitations are documented in code comments or README.md so users understand the current scope of the library.",
+            "details": "In a clean environment where the package has been installed from the git source, perform the following:\n- Start a Python REPL or script and run `import ensembl_orm`.\n- Verify access to key exports: DatabaseSettings, initialize_engine, get_engine, get_session, close_all_sessions, discover_database_name, EnsemblDiscoveryError, EnsemblSessionError, and core models like Gene and SeqRegion via both `ensembl_orm.Gene` and `from ensembl_orm import Gene`.\n- Using a mocked or in-memory engine/session (e.g., via the fixtures design), construct a simple SQLModel query such as a select on Gene filtered by gene_id and ensure it compiles or executes against the mock backend without raising ORM-level errors.\n- Confirm that import and basic usage do not trigger unintended side effects like immediate real DB connections.\n- Note any remaining limitations or TODOs (e.g., unsupported tables, partial relationship coverage) and, if appropriate, add a short “Limitations / Future work” section in README.md or project documentation.\nAcceptance criteria:\n- All symbols listed in ensembl_orm.__all__ are importable and usable without AttributeError.\n- Basic SQLModel queries involving the public models can be constructed and run against a test or mocked backend without schema mismatches.\n- Any known limitations are documented in code comments or README.md so users understand the current scope of the library.\n<info added on 2026-05-22T08:31:37.239Z>\nQuality gate - strict no-external-network rule for final smoke validation:\n- All smoke tests must execute with outbound network access blocked (e.g., via environment variable override setting host to localhost or a non-routable address, or by monkeypatching socket/urllib to raise on any external connection attempt).\n- All discovery and session initialization calls must be fully mocked before invoking any ensembl_orm code. Specifically, `discover_database_name`, `initialize_engine`, `get_engine`, `get_session`, and any underlying `urllib.urlopen` or MySQL connection calls must be patched so that no code path can reach `ensembldb.ensembl.org` or any other external host.\n- Any unintended real network or database connection attempt detected during the smoke test (e.g., an unpatched call leaking through) must be treated as an immediate test failure, not a warning.\n- Acceptance: smoke test passes only when it can be demonstrated that import, symbol access, and basic query construction complete successfully with zero outbound network activity.\n</info added on 2026-05-22T08:31:37.239Z>",
             "status": "pending",
             "testStrategy": "Run an end-to-end script in a fresh environment that imports ensembl_orm, constructs a DatabaseSettings instance with a non-production or dummy DB URL, creates an engine and session (real or in-memory), and performs at least one query using a public model. Monitor logs or connection attempts to ensure no real Ensembl database is contacted during this smoke test.",
             "parentId": "undefined"
@@ -673,7 +671,9 @@
       "completedCount": 7,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-05-22T08:30:09.362Z",
+      "description": "Tasks for master context"
     }
   }
 }
