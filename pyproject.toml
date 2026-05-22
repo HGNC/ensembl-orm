@@ -45,5 +45,5 @@ target-version = "py313"
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-build_command = "uv build"
 commit_message = "chore(release): {version} [skip ci]"
+major_on_zero = true
