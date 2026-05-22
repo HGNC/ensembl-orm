@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/api-reference/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/configuration/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/development-workflow/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/getting-started/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/models/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/querying/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hgnc.github.io/ensembl-orm/testing/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+</urlset>
