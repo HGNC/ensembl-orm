@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    outputs:
+      new-version: ${{ steps.release.outputs.new-version }}
+      new-tag: ${{ steps.release.outputs.new-tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Python Semantic Release
+        id: release
+        uses: python-semantic-release/python-semantic-release@v9
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          commit_message: "chore(release): {version} [skip ci]"
+          major_on_zero: true
+          net_loc_unchanged: true
+          upload_release_files: true
+          upload_to_hash_partitions: true
+          build_environment_env: "PYTHON_VERSION=3.13"

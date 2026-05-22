@@ -1,0 +1,68 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Create virtual environment and install dependencies
+        run: |
+          uv venv
+          uv sync --extra dev
+
+      - name: Clean stale coverage data
+        run: rm -f .coverage* htmlcov/ coverage.xml
+
+      - name: Run tests with coverage
+        run: uv run pytest --cov=ensembl_orm --cov-report=xml --cov-report=term
+
+      - name: Check coverage threshold
+        shell: bash
+        run: |
+          python3 - << 'EOF'
+          import sys
+          import xml.etree.ElementTree as ET
+          import os
+
+          cov_file = 'coverage.xml'
+          if not os.path.exists(cov_file):
+              print(f'::warning::Coverage file {cov_file} not found')
+              sys.exit(1)
+
+          try:
+              tree = ET.parse(cov_file)
+              root = tree.getroot()
+              line_rate = float(root.get('line-rate', '0')) * 100
+              print(f'Current coverage: {line_rate:.1f}%')
+              if line_rate < 90:
+                  print('::warning::Coverage is below 90% threshold')
+                  sys.exit(1)
+          except ET.ParseError as e:
+              print(f'::warning::Could not parse coverage.xml: {e}')
+              sys.exit(1)
+          except Exception as e:
+              print(f'::warning::Exception reading coverage: {type(e).__name__}')
+              sys.exit(1)
+          EOF
