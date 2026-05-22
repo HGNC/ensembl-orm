@@ -384,7 +384,7 @@
         "id": "14",
         "title": "Xref, ObjectXref, and ExternalDb model implementations",
         "description": "Implement the ExternalDb, Xref, and ObjectXref SQLModel table models with correct column mappings, enum types, nullable constraints, and the Xref->ExternalDb and ObjectXref->Xref many-to-one relationships.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "13"
         ],
@@ -398,9 +398,10 @@
             "description": "Create pytest test modules for all three models with metadata-only assertions using sa_inspect() and DB-free enum behavior checks. Tests must import from concrete module paths only — not from the package-level namespace. Tests should fail since models don't exist yet.",
             "dependencies": [],
             "details": "Create three test files following the existing test_gene.py / test_seq_region.py pattern from Task 13.\n\n**Import convention**: All test files must import models from concrete module paths only:\n- `from ensembl_orm.models.external_db import ExternalDb`\n- `from ensembl_orm.models.xref import Xref`\n- `from ensembl_orm.models.object_xref import ObjectXref`\nDo NOT use package-level imports such as `from ensembl_orm.models import ...` in this subtask.\n\n**Authoritative enum values** (from `src/ensembl_orm/enums.py`):\n- InfoType: NONE, PROBE, DEPENDENT, DIRECT, INFERRED_PAIR, PROBE2TRANSCRIPT, UNMAPPED, CHECKSUM\n- ExternalDbStatus: KNOWN, XREF, DUMPED, DEPENDENT\n- ExternalDbType: PRIMARY, SECONDARY, MISC, CHECKSUM, DEPENDENT, IMAGE_DEPICTION\n- EnsemblObjectType: Gene, Transcript, Translation\n\n**tests/models/test_external_db.py**:\n- Assert `ExternalDb.__tablename__ == \"external_db\"`\n- Assert 11 columns exist with correct names: external_db_id, db_name, status, priority, dbprimary_acc_link, display_name_link, db_display_name, type, secondary_db_name, description, release\n- Assert external_db_id is primary key\n- Assert db_name is NOT NULL (String(255))\n- Assert priority is NOT NULL (Integer)\n- Assert status column uses SAEnum(ExternalDbStatus) and is nullable\n- Assert type column uses SAEnum(ExternalDbType) and is nullable\n- Assert nullable columns (dbprimary_acc_link, display_name_link, db_display_name, secondary_db_name, description, release) accept None\n- Enum behavior: assert constructing ExternalDb with valid `status=ExternalDbStatus.KNOWN` succeeds\n- Enum behavior: assert constructing ExternalDb with valid `type=ExternalDbType.PRIMARY` succeeds\n- Enum behavior: assert assigning an invalid string to `status` or `type` raises an error\n\n**tests/models/test_xref.py**:\n- Assert `Xref.__tablename__ == \"xref\"`\n- Assert 8 columns exist with correct names: xref_id, external_db_id, dbprimary_acc, display_label, version, description, info_type, info_text\n- Assert xref_id is primary key\n- Assert external_db_id is NOT NULL with ForeignKey to external_db.external_db_id\n- Assert info_type uses SAEnum(InfoType) and is nullable\n- Assert `Xref.external_db` relationship is defined (unidirectional, no back_populates)\n- Assert nullable columns accept None\n- Enum behavior: assert constructing Xref with valid `info_type=InfoType.DIRECT` succeeds\n- Enum behavior: assert assigning an invalid string to `info_type` raises an error\n\n**tests/models/test_object_xref.py**:\n- Assert `ObjectXref.__tablename__ == \"object_xref\"`\n- Assert 7 columns exist with correct names: object_xref_id, xref_id, ensembl_id, ensembl_object_type, linkage_annotation, analysis_id, linkage_type\n- Assert object_xref_id is primary key\n- Assert xref_id is NOT NULL with ForeignKey to xref.xref_id\n- Assert ensembl_id is NOT NULL\n- Assert ensembl_object_type is NOT NULL and uses SAEnum(EnsemblObjectType)\n- Assert linkage_type uses SAEnum(InfoType) and is nullable\n- Assert `ObjectXref.xref` relationship is defined (unidirectional, no back_populates)\n- Assert nullable columns accept None\n- Enum behavior: assert constructing ObjectXref with valid `ensembl_object_type=EnsemblObjectType.Gene` succeeds\n- Enum behavior: assert constructing ObjectXref with valid `linkage_type=InfoType.DIRECT` succeeds\n- Enum behavior: assert assigning an invalid string to `ensembl_object_type` or `linkage_type` raises an error\n\nAll tests use sa_inspect() metadata inspection only — no database sessions or SQLite engines. Enum behavior checks are supplementary DB-free validations (no sessions or round-trips required). Import enums from `ensembl_orm.enums` as needed.\n<info added on 2026-05-22T07:39:38.851Z>\nCorrection to enum behavior examples for ObjectXref: When constructing ObjectXref with valid ensembl_object_type, use the uppercase enum member name `EnsemblObjectType.GENE` (not `EnsemblObjectType.Gene`). The stored database value semantics remain `\"Gene\"` as defined by StrEnum, but the Python enum member accessed in code is `GENE`. Apply this uppercase member convention consistently wherever EnsemblObjectType members are referenced in test assertions.\n</info added on 2026-05-22T07:39:38.851Z>",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run tests and confirm they all fail (ImportError or AttributeError) since models don't exist yet: uv run pytest tests/models/test_external_db.py tests/models/test_xref.py tests/models/test_object_xref.py -v",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T07:52:39.336Z"
           },
           {
             "id": 2,
@@ -410,9 +411,10 @@
               1
             ],
             "details": "Add src/ensembl_orm/models/external_db.py implementing the ExternalDb class.\n\n```python\nfrom sqlalchemy import Column, Integer, String, Text, Enum as SAEnum\nfrom sqlmodel import Field, SQLModel\n\nfrom ensembl_orm.enums import ExternalDbStatus, ExternalDbType\n\n\nclass ExternalDb(SQLModel, table=True):\n    __tablename__ = \"external_db\"\n\n    external_db_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))\n    db_name: str = Field(sa_column=Column(String(255), nullable=False))\n    status: ExternalDbStatus | None = Field(default=None, sa_column=Column(SAEnum(ExternalDbStatus), nullable=True))\n    priority: int = Field(sa_column=Column(Integer, nullable=False))\n    dbprimary_acc_link: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    display_name_link: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    db_display_name: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    type: ExternalDbType | None = Field(default=None, sa_column=Column(SAEnum(ExternalDbType), nullable=True))\n    secondary_db_name: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    description: str | None = Field(default=None, sa_column=Column(Text, nullable=True))\n    release: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n```\n\nKey conventions: use `X | None` syntax (no Optional import), no relationships on this model (it is the parent).",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run test_external_db.py — all tests should now pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T07:52:39.339Z"
           },
           {
             "id": 3,
@@ -422,9 +424,10 @@
               2
             ],
             "details": "Add src/ensembl_orm/models/xref.py:\n\n```python\nfrom sqlalchemy import Column, Integer, String, Text, Enum as SAEnum, ForeignKey\nfrom sqlmodel import Field, SQLModel, Relationship\n\nfrom ensembl_orm.enums import InfoType\nfrom ensembl_orm.models.external_db import ExternalDb\n\n\nclass Xref(SQLModel, table=True):\n    __tablename__ = \"xref\"\n\n    xref_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))\n    external_db_id: int = Field(sa_column=Column(Integer, ForeignKey(\"external_db.external_db_id\"), nullable=False))\n    dbprimary_acc: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    display_label: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    version: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    description: str | None = Field(default=None, sa_column=Column(Text, nullable=True))\n    info_type: InfoType | None = Field(default=None, sa_column=Column(SAEnum(InfoType), nullable=True))\n    info_text: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n\n    external_db: ExternalDb | None = Relationship()\n```\n\nKey conventions: `X | None` syntax, direct import of ExternalDb (not string forward ref), unidirectional `Relationship()` without back_populates, do NOT add xrefs list to ExternalDb.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run test_xref.py — all tests should now pass.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T07:52:39.341Z"
           },
           {
             "id": 4,
@@ -434,9 +437,10 @@
               3
             ],
             "details": "Add src/ensembl_orm/models/object_xref.py:\n\n```python\nfrom sqlalchemy import Column, Integer, String, Enum as SAEnum, ForeignKey\nfrom sqlmodel import Field, SQLModel, Relationship\n\nfrom ensembl_orm.enums import EnsemblObjectType, InfoType\nfrom ensembl_orm.models.xref import Xref\n\n\nclass ObjectXref(SQLModel, table=True):\n    __tablename__ = \"object_xref\"\n\n    object_xref_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))\n    xref_id: int = Field(sa_column=Column(Integer, ForeignKey(\"xref.xref_id\"), nullable=False))\n    ensembl_id: int = Field(sa_column=Column(Integer, nullable=False))\n    ensembl_object_type: EnsemblObjectType = Field(sa_column=Column(SAEnum(EnsemblObjectType), nullable=False))\n    linkage_annotation: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))\n    analysis_id: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))\n    linkage_type: InfoType | None = Field(default=None, sa_column=Column(SAEnum(InfoType), nullable=True))\n\n    xref: Xref | None = Relationship()\n```\n\nKey conventions: `X | None` syntax, direct import of Xref (not string forward ref), unidirectional `Relationship()` without back_populates, do NOT add object_xrefs list to Xref. Note that ensembl_object_type is NOT NULL (no `| None`).\n\n**Schema Verification Checkpoint for linkage_type**:\n\nBefore finalizing the ObjectXref.linkage_type field definition, perform an explicit verification against the canonical Ensembl schema. The verification scope is limited to confirming whether `object_xref.linkage_type` in the canonical Ensembl schema maps to this project's current InfoType enum definition (NONE, PROBE, DEPENDENT, DIRECT, INFERRED_PAIR, PROBE2TRANSCRIPT, UNMAPPED, CHECKSUM).\n\nVerification steps:\n1. Check the Ensembl SQL schema definition for the object_xref table (e.g., ensembl/schema.sql or the ensembl-production repository).\n2. Confirm the column type is ENUM or equivalent matching InfoType values.\n3. Document the canonical source URL or file path used for verification.\n\nIf the canonical schema shows a different enum type, a different set of values, or a non-enum column type (e.g., a plain string or integer), capture the exact discrepancy including the canonical values or type and escalate to task-level resolution before completing this subtask. Do not proceed with merging an unverified or mismatched linkage_type definition.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run test_object_xref.py — all tests should now pass. Schema verification for linkage_type must be documented before marking complete.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T07:52:39.344Z"
           },
           {
             "id": 5,
@@ -446,15 +450,16 @@
               4
             ],
             "details": "Edit src/ensembl_orm/models/__init__.py to add imports in dependency order after the existing Gene/SeqRegion imports:\n\n```python\nfrom ensembl_orm.models.seq_region import SeqRegion\nfrom ensembl_orm.models.gene import Gene\nfrom ensembl_orm.models.external_db import ExternalDb\nfrom ensembl_orm.models.xref import Xref\nfrom ensembl_orm.models.object_xref import ObjectXref\n```\n\nUpdate `__all__` to include exactly five models: SeqRegion, Gene, ExternalDb, Xref, ObjectXref.\n\nThe import order ensures each model's dependency is imported before it: SeqRegion (no deps) → Gene (depends on SeqRegion) → ExternalDb (no deps) → Xref (depends on ExternalDb) → ObjectXref (depends on Xref).\n\n**Package-level import verification**: This subtask is the only one that must include an explicit package-level import verification. Add a check to confirm: `from ensembl_orm.models import ExternalDb, Xref, ObjectXref`. This ensures the three newly implemented models are importable directly from the `ensembl_orm.models` namespace.\n\nAfter updating, run the full test suite to ensure no regressions and all new tests pass:\n`uv run pytest tests/models/ -v`",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run full model test suite: uv run pytest tests/models/ -v. Verify all tests pass including existing Gene/SeqRegion tests and new ExternalDb/Xref/ObjectXref tests. Confirm package-level imports work: `from ensembl_orm.models import ExternalDb, Xref, ObjectXref`.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-05-22T07:52:39.346Z"
           }
         ],
         "complexity": 7,
         "recommendedSubtasks": 5,
         "expansionPrompt": "Decompose task 14 \"Xref, ObjectXref, and ExternalDb model implementations\" into 5 subtasks. Cover: (1) implement ExternalDb model with enum-backed status/type fields; (2) implement Xref model, including ForeignKey to external_db.external_db_id, InfoType enum usage, and relationship to ExternalDb; (3) implement ObjectXref model with ForeignKey to xref.xref_id, EnsemblObjectType enum, and relationship to Xref; (4) update models/__init__.py to export all three models and handle any forward references; (5) create tests/models/test_external_db.py, tests/models/test_xref.py, and tests/models/test_object_xref.py to validate tablenames, columns, enums, relationships, and nullability. Ensure subtasks are ordered to satisfy model dependencies.",
-        "updatedAt": "2026-05-22T07:43:21.479Z"
+        "updatedAt": "2026-05-22T07:52:39.346Z"
       },
       {
         "id": "15",
@@ -657,9 +662,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-22T07:43:21.479Z",
+      "lastModified": "2026-05-22T07:52:39.346Z",
       "taskCount": 8,
-      "completedCount": 5,
+      "completedCount": 6,
       "tags": [
         "master"
       ]
