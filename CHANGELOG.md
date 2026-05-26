@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.4.0 (2026-05-26)
+
+
 ## v0.3.0 (2026-05-22)
+
+### Features
+
+- Add documentation badge to README
+  ([`24e535d`](https://github.com/HGNC/ensembl-orm/commit/24e535d8f35251b9a7e4a189f08c7f071517db1c))
 
 
 ## v0.2.0 (2026-05-22)
