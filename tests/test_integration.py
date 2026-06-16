@@ -11,6 +11,7 @@ The purpose is a regression guard proving that, with SQLModel removed, the
 module-level session API still produces a working read-only SQLAlchemy session.
 """
 
+import pytest
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -66,19 +67,11 @@ def test_get_session_remains_read_only() -> None:
 
     with get_session() as session:
         session.execute(text("SELECT 1"))
-        try:
+        with pytest.raises(ReadOnlySessionError):
             session.commit()
-        except ReadOnlySessionError:
-            return
-
-    raise AssertionError("commit should have raised ReadOnlySessionError")
 
 
 def test_get_engine_raises_when_uninitialized() -> None:
     """get_engine() surfaces the db-common SessionError before any init."""
-    try:
+    with pytest.raises(SessionError):
         get_engine()
-    except SessionError:
-        return
-
-    raise AssertionError("get_engine() should have raised SessionError when uninitialized")
