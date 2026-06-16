@@ -1,235 +1,191 @@
-"""Tests for the session management module."""
+"""Tests for the session management module.
+
+Engine/session creation is delegated to the shared ``db-common`` library, so
+these tests exercise the public ``ensembl_orm.session`` API against a real
+in-memory SQLite engine (no mocks on db-common internals). Only the
+Ensembl-specific ``discover_database_name`` is patched, because it hits the
+network.
+"""
 
 import logging
-from unittest.mock import MagicMock, patch
+from contextlib import contextmanager
+from unittest.mock import patch
 
 import pytest
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
+import ensembl_orm.session as sess
 from ensembl_orm.config.database_settings import DatabaseSettings
-from ensembl_orm.exceptions import EnsemblSessionError
+from ensembl_orm.exceptions import ReadOnlySessionError, SessionError
+from ensembl_orm.session import close_all_sessions, get_engine, get_session, initialize_engine
 
 
 @pytest.fixture(autouse=True)
 def _reset_engine():
-    """Clear the global engine before and after each test."""
-    import ensembl_orm.session as sess
-
-    sess._engine = None
+    """Clear the module-level engine/session factories before and after each test."""
+    sess._engine_factory = None
+    sess._session_factory = None
     yield
-    sess._engine = None
+    sess._engine_factory = None
+    sess._session_factory = None
 
 
-@pytest.fixture()
-def settings():
-    """Provide DatabaseSettings with explicit database set."""
-    return DatabaseSettings(
-        host="localhost",
-        port=3306,
-        user="testuser",
-        password="testpass",
-        database="test_db",
-    )
+def _sqlite_settings() -> DatabaseSettings:
+    """Return settings that build a real in-memory SQLite engine.
+
+    The ``sqlite`` driver makes db-common use ``sqlite:///:memory:`` with a
+    :class:`~sqlalchemy.pool.StaticPool`, so the same in-memory connection is
+    shared across sessions within a test.
+    """
+    return DatabaseSettings(driver="sqlite", database=":memory:")
+
+
+@contextmanager
+def _stub_engine_factories():
+    """Stub the db-common EngineFactory/SessionFactory so no driver is loaded.
+
+    The discovery-branch tests use the MySQL driver to exercise the non-SQLite
+    code path, but mysqlclient's native ``libmysqlclient`` is not available in
+    every environment. Patching the delegation boundary keeps these as focused
+    unit tests of ``initialize_engine``'s discovery *decision* (whether
+    ``discover_database_name`` is called), which is the behaviour under test.
+    """
+    with patch("ensembl_orm.session.EngineFactory") as ef, patch("ensembl_orm.session.SessionFactory") as sf:
+        yield ef, sf
 
 
 class TestInitializeEngine:
     """Tests for initialize_engine()."""
 
-    def test_creates_engine_with_correct_url_and_pool_settings(self, settings):
-        """initialize_engine calls create_engine with connection_url and pool args."""
-        from ensembl_orm.session import initialize_engine
+    def test_returns_real_sqlite_engine(self):
+        """initialize_engine constructs and returns a SQLAlchemy Engine."""
+        engine = initialize_engine(_sqlite_settings())
 
-        mock_engine = MagicMock()
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine) as mock_create:
-            engine = initialize_engine(settings)
+        assert isinstance(engine, Engine)
 
-        assert engine is mock_engine
-        mock_create.assert_called_once_with(
-            settings.connection_url,
-            pool_size=settings.pool_size,
-            pool_recycle=settings.pool_recycle,
-        )
-
-    def test_calls_discover_when_database_empty(self):
-        """When settings.database is empty, discover_database_name is called."""
-        from ensembl_orm.session import initialize_engine
-
-        empty_settings = DatabaseSettings(host="localhost", port=3306, user="testuser", password="testpass")
-        mock_engine = MagicMock()
-
-        with (
-            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
-            patch("ensembl_orm.session.discover_database_name", return_value="discovered_db") as mock_discover,
-        ):
-            initialize_engine(empty_settings)
-
-        mock_discover.assert_called_once_with(empty_settings)
-        assert empty_settings.database == "discovered_db"
-
-    def test_skips_discovery_when_database_set(self, settings):
-        """When settings.database is already set, discover_database_name is NOT called."""
-        from ensembl_orm.session import initialize_engine
-
-        mock_engine = MagicMock()
-        with (
-            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
-            patch("ensembl_orm.session.discover_database_name") as mock_discover,
-        ):
-            initialize_engine(settings)
-
-        mock_discover.assert_not_called()
-
-    def test_idempotent_returns_same_engine(self, settings):
-        """Repeated calls return the same engine without re-creating."""
-        from ensembl_orm.session import initialize_engine
-
-        mock_engine = MagicMock()
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine):
-            first = initialize_engine(settings)
-            second = initialize_engine(settings)
+    def test_idempotent_returns_same_engine(self):
+        """Repeated calls return the cached engine without re-creating."""
+        first = initialize_engine(_sqlite_settings())
+        second = initialize_engine(_sqlite_settings())
 
         assert first is second
 
     def test_defaults_settings_when_none(self):
-        """When settings is None, a default DatabaseSettings is created."""
-        from ensembl_orm.session import initialize_engine
-
-        mock_engine = MagicMock()
+        """When settings is None, default DatabaseSettings is used and discovery runs."""
         with (
-            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
-            patch("ensembl_orm.session.discover_database_name", return_value="auto_db"),
+            patch("ensembl_orm.session.discover_database_name", return_value="discovered_db") as mock_discover,
+            _stub_engine_factories(),
         ):
-            engine = initialize_engine(None)
+            initialize_engine(None)
 
-        assert engine is mock_engine
+        used_settings = mock_discover.call_args[0][0]
+        assert used_settings.host == "ensembldb.ensembl.org"
+        assert used_settings.port == 5306
 
-    def test_logs_debug_with_masked_password(self, settings, caplog):
-        """Debug log contains masked password, not the real one."""
-        from ensembl_orm.session import initialize_engine
+    def test_skips_discovery_when_database_set(self):
+        """When settings.database is set (non-SQLite), discover_database_name is NOT called."""
+        settings = DatabaseSettings(
+            driver="mysql+mysqldb",
+            host="db.example.com",
+            port=3306,
+            username="u",
+            password="p",
+            database="mydb",
+        )
 
-        mock_engine = MagicMock()
         with (
-            patch("ensembl_orm.session.create_engine", return_value=mock_engine),
-            caplog.at_level(logging.DEBUG, logger="ensembl_orm"),
+            patch("ensembl_orm.session.discover_database_name") as mock_discover,
+            _stub_engine_factories(),
         ):
             initialize_engine(settings)
 
-        log_messages = [r.message for r in caplog.records]
-        assert any("Connection URL" in m for m in log_messages)
-        assert not any("testpass" in m for m in log_messages)
+        mock_discover.assert_not_called()
+        assert settings.database == "mydb"
 
-    def test_stores_engine_in_global(self, settings):
-        """The created engine is stored in the module-level _engine variable."""
-        import ensembl_orm.session as sess
+    def test_skips_discovery_for_sqlite_driver(self):
+        """SQLite driver skips discovery even when database is empty."""
+        settings = DatabaseSettings(driver="sqlite")
 
-        from ensembl_orm.session import initialize_engine
-
-        mock_engine = MagicMock()
-        with patch("ensembl_orm.session.create_engine", return_value=mock_engine):
+        with patch("ensembl_orm.session.discover_database_name") as mock_discover:
             initialize_engine(settings)
 
-        assert sess._engine is mock_engine
+        mock_discover.assert_not_called()
+
+    def test_runs_discovery_when_database_empty_and_not_sqlite(self):
+        """When database is empty and driver is not SQLite, discovery runs and fills database."""
+        settings = DatabaseSettings(
+            driver="mysql+mysqldb",
+            host="db.example.com",
+            port=3306,
+            username="u",
+            password="p",
+            database="",
+        )
+
+        with (
+            patch("ensembl_orm.session.discover_database_name", return_value="discovered_db") as mock_discover,
+            _stub_engine_factories(),
+        ):
+            initialize_engine(settings)
+
+        mock_discover.assert_called_once_with(settings)
+        assert settings.database == "discovered_db"
+
+    def test_logs_info_on_init(self, caplog):
+        """Info log is emitted when the engine is initialized."""
+        with caplog.at_level(logging.INFO, logger="ensembl_orm"):
+            initialize_engine(_sqlite_settings())
+
+        assert any("initialized" in r.message.lower() for r in caplog.records)
 
 
 class TestGetEngine:
     """Tests for get_engine()."""
 
-    def test_returns_global_engine(self):
-        """get_engine returns the initialized engine."""
-        import ensembl_orm.session as sess
+    def test_returns_initialized_engine(self):
+        """get_engine returns the same engine initialize_engine built."""
+        engine = initialize_engine(_sqlite_settings())
 
-        from ensembl_orm.session import get_engine
+        assert get_engine() is engine
 
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
-        assert get_engine() is mock_engine
-
-    def test_raises_when_not_initialized(self):
-        """get_engine raises EnsemblSessionError when engine is None."""
-        from ensembl_orm.session import get_engine
-
-        with pytest.raises(EnsemblSessionError, match="Engine not initialized"):
+    def test_raises_session_error_when_uninitialized(self):
+        """get_engine raises db_common SessionError when never initialized."""
+        with pytest.raises(SessionError, match="not initialized"):
             get_engine()
 
 
 class TestGetSession:
-    """Tests for get_session()."""
+    """Tests for get_session() (the read-only delegation contract)."""
 
-    def test_yields_session_bound_to_engine(self):
-        """get_session creates a Session with the global engine."""
-        import ensembl_orm.session as sess
+    def test_yields_real_session_executing_select(self):
+        """get_session yields a real Session that can execute a query (SQLite)."""
+        initialize_engine(_sqlite_settings())
 
-        from ensembl_orm.session import get_session
+        with get_session() as session:
+            assert isinstance(session, Session)
+            assert session.execute(text("SELECT 1")).scalar() == 1
 
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
+    def test_commit_raises_read_only_session_error(self):
+        """Committing inside a read-only session raises ReadOnlySessionError."""
+        initialize_engine(_sqlite_settings())
 
-        with patch("ensembl_orm.session.Session") as mock_session_cls:
-            mock_session = MagicMock()
-            mock_session_cls.return_value = mock_session
-            with get_session() as session:
-                assert session is mock_session
-            mock_session_cls.assert_called_once_with(mock_engine)
+        with get_session() as session:
+            session.execute(text("SELECT 1"))
+            with pytest.raises(ReadOnlySessionError):
+                session.commit()
 
-    def test_sets_read_only_transaction(self):
-        """get_session executes SET SESSION TRANSACTION READ ONLY."""
-        import ensembl_orm.session as sess
+    def test_session_is_bound_to_the_engine(self):
+        """The yielded session is bound to the initialized engine."""
+        engine = initialize_engine(_sqlite_settings())
 
-        from ensembl_orm.session import get_session
+        with get_session() as session:
+            assert session.bind is engine
 
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
-
-        with patch("ensembl_orm.session.Session") as mock_session_cls:
-            mock_session = MagicMock()
-            mock_session_cls.return_value = mock_session
-            with get_session():
-                pass
-
-        calls = mock_session.execute.call_args_list
-        assert len(calls) >= 1
-        executed_sql = [c[0][0].text for c in calls]
-        assert "SET SESSION TRANSACTION READ ONLY" in executed_sql
-
-    def test_closes_session_on_exit(self):
-        """session.close() is called when context exits."""
-        import ensembl_orm.session as sess
-
-        from ensembl_orm.session import get_session
-
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
-
-        with patch("ensembl_orm.session.Session") as mock_session_cls:
-            mock_session = MagicMock()
-            mock_session_cls.return_value = mock_session
-            with get_session():
-                pass
-
-        mock_session.close.assert_called_once()
-
-    def test_closes_session_on_exception(self):
-        """session.close() is called even when an exception occurs inside the with block."""
-        import ensembl_orm.session as sess
-
-        from ensembl_orm.session import get_session
-
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
-
-        with patch("ensembl_orm.session.Session") as mock_session_cls:
-            mock_session = MagicMock()
-            mock_session_cls.return_value = mock_session
-            with pytest.raises(ValueError):
-                with get_session():
-                    raise ValueError("boom")
-
-        mock_session.close.assert_called_once()
-
-    def test_raises_when_engine_not_initialized(self):
-        """get_session propagates EnsemblSessionError if engine not initialized."""
-        from ensembl_orm.session import get_session
-
-        with pytest.raises(EnsemblSessionError, match="Engine not initialized"):
+    def test_raises_session_error_when_uninitialized(self):
+        """get_session raises SessionError if the engine was never initialized."""
+        with pytest.raises(SessionError, match="not initialized"):
             with get_session():
                 pass
 
@@ -237,42 +193,41 @@ class TestGetSession:
 class TestCloseAllSessions:
     """Tests for close_all_sessions()."""
 
-    def test_disposes_engine_and_clears_global(self):
-        """close_all_sessions calls dispose() and sets _engine to None."""
-        import ensembl_orm.session as sess
+    def test_disposes_engine_and_clears_globals(self):
+        """close_all_sessions disposes the engine and clears the module singletons."""
+        initialize_engine(_sqlite_settings())
+        assert sess._engine_factory is not None
+        assert sess._session_factory is not None
 
-        from ensembl_orm.session import close_all_sessions
-
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
         close_all_sessions()
 
-        mock_engine.dispose.assert_called_once()
-        assert sess._engine is None
+        assert sess._engine_factory is None
+        assert sess._session_factory is None
 
-    def test_idempotent_when_engine_already_none(self):
-        """Calling close_all_sessions when _engine is None raises no error."""
-        import ensembl_orm.session as sess
+    def test_idempotent_when_uninitialized(self):
+        """Calling close_all_sessions before any init raises no error."""
+        assert sess._engine_factory is None
 
-        from ensembl_orm.session import close_all_sessions
-
-        assert sess._engine is None
         close_all_sessions()
-        assert sess._engine is None
+
+        assert sess._engine_factory is None
+
+    def test_allows_reinit_after_close(self):
+        """A fresh engine is built when initialize_engine runs after close."""
+        first = initialize_engine(_sqlite_settings())
+        close_all_sessions()
+        second = initialize_engine(_sqlite_settings())
+
+        assert first is not second
 
     def test_logs_info_on_dispose(self, caplog):
-        """Info log is emitted when engine is disposed."""
-        import ensembl_orm.session as sess
-
-        from ensembl_orm.session import close_all_sessions
-
-        mock_engine = MagicMock()
-        sess._engine = mock_engine
+        """Info log is emitted when the engine is disposed."""
+        initialize_engine(_sqlite_settings())
 
         with caplog.at_level(logging.INFO, logger="ensembl_orm"):
             close_all_sessions()
 
-        assert any("Engine disposed" in r.message for r in caplog.records)
+        assert any("disposed" in r.message.lower() for r in caplog.records)
 
 
 class TestPublicAPIExports:
@@ -280,12 +235,7 @@ class TestPublicAPIExports:
 
     def test_imports_from_package_root(self):
         """Session functions are importable from the top-level package."""
-        from ensembl_orm import (
-            close_all_sessions,
-            get_engine,
-            get_session,
-            initialize_engine,
-        )
+        from ensembl_orm import close_all_sessions, get_engine, get_session, initialize_engine
 
         assert callable(initialize_engine)
         assert callable(get_engine)
@@ -294,7 +244,7 @@ class TestPublicAPIExports:
 
     def test_imports_are_same_objects(self):
         """Imported objects from __init__ are the same as from the module."""
-        from ensembl_orm import get_engine, get_session, initialize_engine, close_all_sessions
+        from ensembl_orm import close_all_sessions, get_engine, get_session, initialize_engine
         from ensembl_orm.session import (
             close_all_sessions as sess_close,
             get_engine as sess_get_engine,

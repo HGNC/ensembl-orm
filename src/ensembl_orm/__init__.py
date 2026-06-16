@@ -3,7 +3,7 @@
 from ensembl_orm.config.database_settings import DatabaseSettings
 from ensembl_orm.discovery import discover_database_name
 from ensembl_orm.enums import EnsemblObjectType, ExternalDbStatus, ExternalDbType, InfoType
-from ensembl_orm.exceptions import EnsemblDiscoveryError, EnsemblSessionError
+from ensembl_orm.exceptions import EnsemblDiscoveryError, ReadOnlySessionError, SessionError
 from ensembl_orm.models.external_db import ExternalDb
 from ensembl_orm.models.gene import Gene
 from ensembl_orm.models.karyotype import Karyotype
@@ -21,7 +21,8 @@ __all__: list[str] = [
     "close_all_sessions",
     "discover_database_name",
     "EnsemblDiscoveryError",
-    "EnsemblSessionError",
+    "SessionError",
+    "ReadOnlySessionError",
     "EnsemblObjectType",
     "ExternalDbStatus",
     "ExternalDbType",

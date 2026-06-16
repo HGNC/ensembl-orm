@@ -11,18 +11,25 @@ def test_import_database_settings() -> None:
 
 
 def test_import_exceptions() -> None:
-    from ensembl_orm.exceptions import EnsemblDiscoveryError, EnsemblSessionError
+    from ensembl_orm.exceptions import EnsemblDiscoveryError, ReadOnlySessionError, SessionError
 
     assert issubclass(EnsemblDiscoveryError, Exception)
-    assert issubclass(EnsemblSessionError, Exception)
+    assert issubclass(SessionError, Exception)
+    assert issubclass(ReadOnlySessionError, SessionError)
 
 
 def test_import_from_top_level_package() -> None:
-    from ensembl_orm import DatabaseSettings, EnsemblDiscoveryError, EnsemblSessionError
+    from ensembl_orm import (
+        DatabaseSettings,
+        EnsemblDiscoveryError,
+        ReadOnlySessionError,
+        SessionError,
+    )
 
     assert DatabaseSettings is not None
     assert EnsemblDiscoveryError is not None
-    assert EnsemblSessionError is not None
+    assert SessionError is not None
+    assert ReadOnlySessionError is not None
 
 
 def test_database_settings_defaults() -> None:

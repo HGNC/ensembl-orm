@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from ensembl_orm.config.database_settings import DatabaseSettings
-from ensembl_orm.exceptions import EnsemblDiscoveryError, EnsemblSessionError
+from ensembl_orm.exceptions import EnsemblDiscoveryError
 
 
 @pytest.fixture
@@ -69,9 +69,3 @@ def mock_show_databases_result() -> MagicMock:
 def ensembl_discovery_error() -> EnsemblDiscoveryError:
     """Provide an EnsemblDiscoveryError instance."""
     return EnsemblDiscoveryError("test discovery failure")
-
-
-@pytest.fixture
-def ensembl_session_error() -> EnsemblSessionError:
-    """Provide an EnsemblSessionError instance."""
-    return EnsemblSessionError("test session failure")
