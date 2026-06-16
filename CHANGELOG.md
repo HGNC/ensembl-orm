@@ -1,6 +1,94 @@
 # CHANGELOG
 
 
+## v0.5.0 (2026-06-16)
+
+### Bug Fixes
+
+- **ci**: Restore green CI after the db-common migration
+  ([`86ecb66`](https://github.com/HGNC/ensembl-orm/commit/86ecb66852a650e6eaeb0fc61bfa85dee3219d24))
+
+docs.yml installed via `pip install -e .`, which can't resolve db-common (it's a git source, not on
+  PyPI); switch to `uv sync --extra docs` and add a docs extra. Delete the redundant ci.yml (it
+  duplicated lint.yml + test.yml) and fold its Codecov upload into test.yml.
+
+The lint mypy job was red: db_common's wheel ships no py.typed marker, so mypy sees its API as Any;
+  bridge it with a typed helper in session.py.
+
+Also modernize the uv bootstrap to astral-sh/setup-uv@v8, bump actions-gh-pages to v4, and ignore
+  the MkDocs /site/ build output.
+
+### Build System
+
+- **deps**: Pin db-common v0.1.0 as a git dependency (Task T1)
+  ([`b9bc838`](https://github.com/HGNC/ensembl-orm/commit/b9bc838a5515da6376b5fa1829e99418a97ab6a7))
+
+### Features
+
+- **config**: Replace DatabaseSettings with EnsemblDatabaseSettings(db_common.DatabaseSettings)
+  (Task T3)
+  ([`2f01fff`](https://github.com/HGNC/ensembl-orm/commit/2f01fffc36c9e0c15404d2012fcfb08496624272))
+
+### Refactoring
+
+- **models**: Convert all 7 models to SQLAlchemy on db_common.DeclarativeBase (Task T2)
+  ([`69f2f58`](https://github.com/HGNC/ensembl-orm/commit/69f2f585b601704e52f7ccb51bccfcb0a03ec23c))
+
+Rewrite every mapped model from SQLModel to plain SQLAlchemy 2.0 on db_common.DeclarativeBase, using
+  Mapped[...]/mapped_column(...) and relationship(...). Convert in foreign-key order within this
+  single commit (seq_region → external_db → xref → object_xref → karyotype/gene/seq_region_attrib)
+  so relationships never span a SQLModel↔SQLAlchemy boundary. Drop the pydantic @field_validator
+  hooks on external_db, xref, and object_xref — they don't run on plain SQLAlchemy models and the
+  MySQL ENUM still enforces validity on write.
+
+The SQL mapper contract is preserved byte-for-byte: column count/names/ types/nullability, primary
+  and foreign keys, __table_args__ (incl. SeqRegionAttrib composite PK), string lengths,
+  SAEnum(enum_class), and relationship existence + target class — all pinned by the existing
+  sqlalchemy.inspect tests, which stay green and unchanged. Single autoincrement PKs use Mapped[int]
+  (db-common's own idiom) so the column resolves nullable=False, matching the prior Core Column
+  behavior; the naive Mapped[int | None] mirror would wrongly mark PKs nullable.
+
+Tests: add test_subclasses_db_common_declarative_base to all 7 model test files; in
+  test_external_db/test_xref/test_object_xref replace each model_validate/ValidationError pair with
+  a single direct-construction test for a valid enum value; drop the now-unused
+  pytest/ValidationError imports.
+
+sqlmodel remains installed and session.py still imports it — that removal is T5's scope,
+  intentionally untouched here.
+
+249 passed; ruff check + format clean.
+
+- **session**: Delegate engine/session to db-common and re-export its exceptions (Task T4)
+  ([`7a6d232`](https://github.com/HGNC/ensembl-orm/commit/7a6d23262fbd3b65a5dbe0f7caef625d539bd594))
+
+Migrate session and exception infrastructure onto the shared db-common library, completing Phase 2
+  of the db-common migration.
+
+Source: - exceptions.py: drop EnsemblSessionError; re-export db_common.SessionError and
+  ReadOnlySessionError (EnsemblDiscoveryError stays Ensembl-specific). - session.py: rewrite to
+  module-level db_common.EngineFactory/SessionFactory singletons. The four public signatures are
+  preserved — initialize_engine (defaults when None, runs discover_database_name only when database
+  is empty and driver != sqlite), get_engine (raises SessionError if uninitialized), get_session
+  (delegates to get_readonly_session, so commits raise ReadOnlySessionError via db-common's
+  before_commit hook), and close_all_sessions (close_all + dispose_engine). SQLModel import removed;
+  modernized to X | None / Generator[Session] per AGENTS.md. - __init__.py: drop
+  EnsemblSessionError, export SessionError/ReadOnlySessionError. Docstring left as "SQLModel" for T5
+  (lockstep with its test assertion).
+
+Tests: - test_session.py: rewritten to exercise the real SQLite path (SELECT 1, ReadOnlySessionError
+  on commit); MySQL discovery-branch unit tests stub EngineFactory/SessionFactory since
+  mysqlclient's libmysqlclient is not loadable in CI. - test_implementation.py,
+  test_public_api_exports.py: EnsemblSessionError -> SessionError/ReadOnlySessionError;
+  EXPECTED_PUBLIC_API updated. - conftest.py: drop the now-removed EnsemblSessionError import and
+  its unused ensembl_session_error fixture.
+
+Public API change: EnsemblSessionError is removed; callers move to the re-exported db_common
+  exceptions (SessionError derives from DatabaseError). Full suite green (260 passed); ruff clean.
+
+- **tests**: Use pytest.raises and dedupe dependency-name parsing
+  ([`d61a355`](https://github.com/HGNC/ensembl-orm/commit/d61a3553ebed91cec461bbc0334e88eb506c31b3))
+
+
 ## v0.4.0 (2026-05-26)
 
 
