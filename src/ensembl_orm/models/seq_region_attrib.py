@@ -1,8 +1,10 @@
-from sqlalchemy import Column, Integer, PrimaryKeyConstraint, String
-from sqlmodel import Field, SQLModel
+from sqlalchemy import Integer, PrimaryKeyConstraint, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from db_common import DeclarativeBase
 
 
-class SeqRegionAttrib(SQLModel, table=True):
+class SeqRegionAttrib(DeclarativeBase):
     """Represent a seq_region_attrib row from the Ensembl database.
 
     Attributes:
@@ -14,6 +16,6 @@ class SeqRegionAttrib(SQLModel, table=True):
     __tablename__ = "seq_region_attrib"
     __table_args__ = (PrimaryKeyConstraint("seq_region_id", "attrib_type_id"),)
 
-    seq_region_id: int = Field(sa_column=Column(Integer, nullable=False))
-    attrib_type_id: int = Field(sa_column=Column(Integer, nullable=False))
-    value: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
+    seq_region_id: Mapped[int] = mapped_column(Integer)
+    attrib_type_id: Mapped[int] = mapped_column(Integer)
+    value: Mapped[str | None] = mapped_column(String(255))

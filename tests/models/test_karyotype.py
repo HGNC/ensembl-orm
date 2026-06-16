@@ -1,5 +1,6 @@
 from sqlalchemy import Integer, String, inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.models.karyotype import Karyotype
 from ensembl_orm.models.seq_region import SeqRegion
 
@@ -78,3 +79,8 @@ def test_seq_region_relationship_targets_seq_region_model():
     mapper = sa_inspect(Karyotype)
     seq_region_relationship = mapper.relationships["seq_region"]
     assert seq_region_relationship.mapper.class_ is SeqRegion
+
+
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(Karyotype, DeclarativeBase)

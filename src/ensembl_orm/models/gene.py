@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from db_common import DeclarativeBase
 from ensembl_orm.models.seq_region import SeqRegion
 
 
-class Gene(SQLModel, table=True):
+class Gene(DeclarativeBase):
     """Represent a gene row from the Ensembl database.
 
     Attributes:
@@ -31,24 +32,22 @@ class Gene(SQLModel, table=True):
 
     __tablename__ = "gene"
 
-    gene_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))
-    biotype: str = Field(sa_column=Column(String(255), nullable=False))
-    analysis_id: int = Field(sa_column=Column(Integer, nullable=False))
-    seq_region_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("seq_region.seq_region_id"), nullable=False),
-    )
-    seq_region_start: int = Field(sa_column=Column(Integer, nullable=False))
-    seq_region_end: int = Field(sa_column=Column(Integer, nullable=False))
-    seq_region_strand: int = Field(sa_column=Column(Integer, nullable=False))
-    display_xref_id: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
-    source: str = Field(sa_column=Column(String(255), nullable=False))
-    description: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
-    is_current: bool = Field(sa_column=Column(Boolean, nullable=False))
-    canonical_transcript_id: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
-    canonical_translation_id: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
-    stable_id: str | None = Field(default=None, sa_column=Column(String(128), nullable=True))
-    version: int | None = Field(default=None, sa_column=Column(Integer, nullable=True))
-    created_date: datetime | None = Field(default=None, sa_column=Column(DateTime, nullable=True))
-    modified_date: datetime | None = Field(default=None, sa_column=Column(DateTime, nullable=True))
+    gene_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    biotype: Mapped[str] = mapped_column(String(255))
+    analysis_id: Mapped[int] = mapped_column(Integer)
+    seq_region_id: Mapped[int] = mapped_column(Integer, ForeignKey("seq_region.seq_region_id"))
+    seq_region_start: Mapped[int] = mapped_column(Integer)
+    seq_region_end: Mapped[int] = mapped_column(Integer)
+    seq_region_strand: Mapped[int] = mapped_column(Integer)
+    display_xref_id: Mapped[int | None] = mapped_column(Integer)
+    source: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    is_current: Mapped[bool] = mapped_column(Boolean)
+    canonical_transcript_id: Mapped[int | None] = mapped_column(Integer)
+    canonical_translation_id: Mapped[int | None] = mapped_column(Integer)
+    stable_id: Mapped[str | None] = mapped_column(String(128))
+    version: Mapped[int | None] = mapped_column(Integer)
+    created_date: Mapped[datetime | None] = mapped_column(DateTime)
+    modified_date: Mapped[datetime | None] = mapped_column(DateTime)
 
-    seq_region: SeqRegion | None = Relationship()
+    seq_region: Mapped[SeqRegion | None] = relationship()

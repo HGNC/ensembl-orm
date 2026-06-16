@@ -1,5 +1,6 @@
 from sqlalchemy import Integer, String, inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.models.seq_region_attrib import SeqRegionAttrib
 
 
@@ -42,3 +43,8 @@ def test_column_nullability():
     assert mapper.columns["seq_region_id"].nullable is False
     assert mapper.columns["attrib_type_id"].nullable is False
     assert mapper.columns["value"].nullable is True
+
+
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(SeqRegionAttrib, DeclarativeBase)

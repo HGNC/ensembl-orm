@@ -1,5 +1,6 @@
 from sqlalchemy import inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.models.gene import Gene
 
 
@@ -79,3 +80,8 @@ def test_models_package_imports():
 
     assert ImportedGene.__tablename__ == "gene"
     assert ImportedSeqRegion.__tablename__ == "seq_region"
+
+
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(Gene, DeclarativeBase)

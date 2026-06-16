@@ -1,12 +1,12 @@
-from sqlalchemy import Column, Enum as SAEnum, ForeignKey, Integer, String, Text
-from pydantic import field_validator
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Enum as SAEnum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from db_common import DeclarativeBase
 from ensembl_orm import enums
 from ensembl_orm.models.external_db import ExternalDb
 
 
-class Xref(SQLModel, table=True):
+class Xref(DeclarativeBase):
     """Represent an xref row in the Ensembl schema.
 
     Attributes:
@@ -23,23 +23,13 @@ class Xref(SQLModel, table=True):
 
     __tablename__ = "xref"
 
-    xref_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))
-    external_db_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("external_db.external_db_id"), nullable=False),
-    )
-    dbprimary_acc: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
-    display_label: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
-    version: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
-    description: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
-    info_type: enums.InfoType | None = Field(default=None, sa_column=Column(SAEnum(enums.InfoType), nullable=True))
-    info_text: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
+    xref_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    external_db_id: Mapped[int] = mapped_column(Integer, ForeignKey("external_db.external_db_id"))
+    dbprimary_acc: Mapped[str | None] = mapped_column(String(255))
+    display_label: Mapped[str | None] = mapped_column(String(255))
+    version: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    info_type: Mapped[enums.InfoType | None] = mapped_column(SAEnum(enums.InfoType))
+    info_text: Mapped[str | None] = mapped_column(String(255))
 
-    external_db: ExternalDb | None = Relationship()
-
-    @field_validator("info_type", mode="before")
-    @classmethod
-    def _validate_info_type(cls, value: enums.InfoType | str | None) -> enums.InfoType | None:
-        """Validate info_type against InfoType enum values."""
-        if value is None or isinstance(value, enums.InfoType):
-            return value
-        return enums.InfoType(value)
+    external_db: Mapped[ExternalDb | None] = relationship()

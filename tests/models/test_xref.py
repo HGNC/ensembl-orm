@@ -1,7 +1,6 @@
-import pytest
-from pydantic import ValidationError
 from sqlalchemy import Enum as SAEnum, Integer, String, Text, inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.enums import InfoType
 from ensembl_orm.models.xref import Xref
 
@@ -89,11 +88,11 @@ def test_external_db_relationship_exists():
     assert "external_db" in relationships
 
 
-def test_valid_info_type_value_is_accepted():
-    xref = Xref.model_validate({"external_db_id": 1, "info_type": InfoType.DIRECT})
+def test_info_type_value_direct_construction():
+    xref = Xref(external_db_id=1, info_type=InfoType.DIRECT)
     assert xref.info_type is InfoType.DIRECT
 
 
-def test_invalid_info_type_value_is_rejected():
-    with pytest.raises((ValueError, ValidationError)):
-        Xref.model_validate({"external_db_id": 1, "info_type": "NOT_AN_INFO_TYPE"})
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(Xref, DeclarativeBase)

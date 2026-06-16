@@ -1,8 +1,10 @@
-from sqlalchemy import Column, Integer, String
-from sqlmodel import Field, SQLModel
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from db_common import DeclarativeBase
 
 
-class SeqRegion(SQLModel, table=True):
+class SeqRegion(DeclarativeBase):
     """Represent a seq_region row from the Ensembl database.
 
     Attributes:
@@ -14,7 +16,7 @@ class SeqRegion(SQLModel, table=True):
 
     __tablename__ = "seq_region"
 
-    seq_region_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))
-    name: str = Field(sa_column=Column(String(255), nullable=False))
-    coord_system_id: int = Field(sa_column=Column(Integer, nullable=False))
-    length: int = Field(sa_column=Column(Integer, nullable=False))
+    seq_region_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    coord_system_id: Mapped[int] = mapped_column(Integer)
+    length: Mapped[int] = mapped_column(Integer)

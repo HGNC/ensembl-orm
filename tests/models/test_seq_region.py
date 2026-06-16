@@ -1,5 +1,6 @@
 from sqlalchemy import Integer, String, inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.models.seq_region import SeqRegion
 
 
@@ -35,3 +36,8 @@ def test_column_types():
     assert type_map["name"] is String
     assert type_map["coord_system_id"] is Integer
     assert type_map["length"] is Integer
+
+
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(SeqRegion, DeclarativeBase)

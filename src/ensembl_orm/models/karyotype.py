@@ -1,10 +1,11 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from db_common import DeclarativeBase
 from ensembl_orm.models.seq_region import SeqRegion
 
 
-class Karyotype(SQLModel, table=True):
+class Karyotype(DeclarativeBase):
     """Represent a karyotype row from the Ensembl database.
 
     Attributes:
@@ -19,13 +20,11 @@ class Karyotype(SQLModel, table=True):
 
     __tablename__ = "karyotype"
 
-    karyotype_id: int | None = Field(default=None, sa_column=Column(Integer, primary_key=True))
-    seq_region_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("seq_region.seq_region_id"), nullable=False),
-    )
-    seq_region_start: int = Field(sa_column=Column(Integer, nullable=False))
-    seq_region_end: int = Field(sa_column=Column(Integer, nullable=False))
-    band: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
-    stain: str | None = Field(default=None, sa_column=Column(String(255), nullable=True))
+    karyotype_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    seq_region_id: Mapped[int] = mapped_column(Integer, ForeignKey("seq_region.seq_region_id"))
+    seq_region_start: Mapped[int] = mapped_column(Integer)
+    seq_region_end: Mapped[int] = mapped_column(Integer)
+    band: Mapped[str | None] = mapped_column(String(255))
+    stain: Mapped[str | None] = mapped_column(String(255))
 
-    seq_region: SeqRegion | None = Relationship()
+    seq_region: Mapped[SeqRegion | None] = relationship()

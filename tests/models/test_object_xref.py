@@ -1,7 +1,6 @@
-import pytest
-from pydantic import ValidationError
 from sqlalchemy import Enum as SAEnum, Integer, String, inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.enums import EnsemblObjectType, InfoType
 from ensembl_orm.models.object_xref import ObjectXref
 
@@ -92,39 +91,25 @@ def test_xref_relationship_exists():
     assert "xref" in relationships
 
 
-def test_valid_ensembl_object_type_value_is_accepted():
-    object_xref = ObjectXref.model_validate(
-        {"xref_id": 1, "ensembl_id": 10, "ensembl_object_type": EnsemblObjectType.GENE},
+def test_ensembl_object_type_value_direct_construction():
+    object_xref = ObjectXref(
+        xref_id=1,
+        ensembl_id=10,
+        ensembl_object_type=EnsemblObjectType.GENE,
     )
     assert object_xref.ensembl_object_type is EnsemblObjectType.GENE
 
 
-def test_valid_linkage_type_value_is_accepted():
-    object_xref = ObjectXref.model_validate(
-        {
-            "xref_id": 1,
-            "ensembl_id": 10,
-            "ensembl_object_type": EnsemblObjectType.GENE,
-            "linkage_type": InfoType.DIRECT,
-        },
+def test_linkage_type_value_direct_construction():
+    object_xref = ObjectXref(
+        xref_id=1,
+        ensembl_id=10,
+        ensembl_object_type=EnsemblObjectType.GENE,
+        linkage_type=InfoType.DIRECT,
     )
     assert object_xref.linkage_type is InfoType.DIRECT
 
 
-def test_invalid_ensembl_object_type_value_is_rejected():
-    with pytest.raises((ValueError, ValidationError)):
-        ObjectXref.model_validate(
-            {"xref_id": 1, "ensembl_id": 10, "ensembl_object_type": "NOT_AN_ENSEMBL_OBJECT_TYPE"},
-        )
-
-
-def test_invalid_linkage_type_value_is_rejected():
-    with pytest.raises((ValueError, ValidationError)):
-        ObjectXref.model_validate(
-            {
-                "xref_id": 1,
-                "ensembl_id": 10,
-                "ensembl_object_type": EnsemblObjectType.GENE,
-                "linkage_type": "NOT_A_LINKAGE_TYPE",
-            },
-        )
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(ObjectXref, DeclarativeBase)

@@ -1,7 +1,6 @@
-import pytest
-from pydantic import ValidationError
 from sqlalchemy import Enum as SAEnum, Integer, String, Text, inspect as sa_inspect
 
+from db_common import DeclarativeBase
 from ensembl_orm.enums import ExternalDbStatus, ExternalDbType
 from ensembl_orm.models.external_db import ExternalDb
 
@@ -90,25 +89,16 @@ def test_type_enum_column():
     assert type_column.type.enum_class is ExternalDbType
 
 
-def test_valid_status_value_is_accepted():
-    external_db = ExternalDb.model_validate(
-        {"db_name": "test_db", "priority": 1, "status": ExternalDbStatus.KNOWN},
-    )
+def test_status_value_direct_construction():
+    external_db = ExternalDb(db_name="test_db", priority=1, status=ExternalDbStatus.KNOWN)
     assert external_db.status is ExternalDbStatus.KNOWN
 
 
-def test_valid_type_value_is_accepted():
-    external_db = ExternalDb.model_validate(
-        {"db_name": "test_db", "priority": 1, "type": ExternalDbType.PRIMARY},
-    )
+def test_type_value_direct_construction():
+    external_db = ExternalDb(db_name="test_db", priority=1, type=ExternalDbType.PRIMARY)
     assert external_db.type is ExternalDbType.PRIMARY
 
 
-def test_invalid_status_value_is_rejected():
-    with pytest.raises((ValueError, ValidationError)):
-        ExternalDb.model_validate({"db_name": "test_db", "priority": 1, "status": "NOT_A_STATUS"})
-
-
-def test_invalid_type_value_is_rejected():
-    with pytest.raises((ValueError, ValidationError)):
-        ExternalDb.model_validate({"db_name": "test_db", "priority": 1, "type": "NOT_A_TYPE"})
+def test_subclasses_db_common_declarative_base():
+    """Models are plain SQLAlchemy on db_common.DeclarativeBase (not SQLModel)."""
+    assert issubclass(ExternalDb, DeclarativeBase)
