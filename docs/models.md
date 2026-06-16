@@ -1,6 +1,6 @@
 # Models
 
-The following SQLModel ORM models map directly to tables in the Ensembl `homo_sapiens_core` database.
+The following SQLAlchemy ORM models map directly to tables in the Ensembl `homo_sapiens_core` database.
 
 ## Gene
 

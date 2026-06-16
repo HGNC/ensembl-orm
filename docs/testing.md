@@ -31,6 +31,7 @@ tests/
 ├── test_discovery.py        # Database name discovery
 ├── test_enums.py            # Enum definition tests
 ├── test_implementation.py   # Import and contract tests
+├── test_integration.py      # End-to-end db-common stack smoke (SQLite)
 ├── test_public_api_exports.py
 ├── test_pyproject.py        # pyproject.toml validation
 ├── test_session.py          # Session management tests

@@ -1,6 +1,6 @@
 # MkDocs configuration file for ensembl-orm documentation
 site_name: ensembl-orm
-site_description: Read-only SQLModel ORM for the Ensembl homo_sapiens_core MySQL database
+site_description: Read-only SQLAlchemy ORM for the Ensembl homo_sapiens_core MySQL database
 site_author: Ensembl Team
 site_url: https://hgnc.github.io/ensembl-orm/
 repo_url: https://github.com/HGNC/ensembl-orm

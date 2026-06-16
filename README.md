@@ -4,20 +4,20 @@
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Docs](https://img.shields.io/badge/docs-gh--pages-blue.svg)](https://hgnc.github.io/ensembl-orm/)
 
-Read-only SQLModel ORM for the Ensembl `homo_sapiens_core` MySQL database.
+Read-only SQLAlchemy ORM for the Ensembl `homo_sapiens_core` MySQL database.
 
 ## Installation
 
 Add as a git-source dependency using `uv`:
 
 ```bash
-uv add "git+https://github.com/your-org/ensembl-orm.git"
+uv add "git+https://github.com/HGNC/ensembl-orm.git"
 ```
 
 Or with `pip`:
 
 ```bash
-pip install "git+https://github.com/your-org/ensembl-orm.git"
+pip install "git+https://github.com/HGNC/ensembl-orm.git"
 ```
 
 Requires Python >= 3.13.
@@ -25,13 +25,15 @@ Requires Python >= 3.13.
 ## Quick start
 
 ```python
-from ensembl_orm import DatabaseSettings, initialize_engine, get_session, Gene
+from sqlalchemy import select
+
+from ensembl_orm import DatabaseSettings, Gene, get_session, initialize_engine
 
 settings = DatabaseSettings(host="ensembldb.ensembl.org", port=5306)
 initialize_engine(settings)
 
 with get_session() as session:
-    genes = session.query(Gene).limit(5).all()
+    genes = session.scalars(select(Gene).limit(5)).all()
     for gene in genes:
         print(gene.gene_id, gene.stable_id)
 ```

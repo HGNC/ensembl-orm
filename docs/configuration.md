@@ -7,6 +7,9 @@ Settings are loaded from environment variables with the `ENSEMBLDB_` prefix.
 | `ENSEMBLDB_HOST` | `ensembldb.ensembl.org` | Database server hostname |
 | `ENSEMBLDB_PORT` | `5306` | Database server port |
 | `ENSEMBLDB_USER` | `anonymous` | Database user name |
+
+> The canonical field name is `username`, so `ENSEMBLDB_USERNAME` is also
+> accepted as an alias for `ENSEMBLDB_USER`.
 | `ENSEMBLDB_PASSWORD` | _(empty)_ | Database user password |
 | `ENSEMBLDB_DATABASE` | _(empty)_ | Target database name (auto-discovered if empty) |
 | `ENSEMBLDB_POOL_SIZE` | `3` | Connection pool size |
@@ -37,4 +40,6 @@ ENSEMBLDB_DATABASE=
 
 ## Auto-discovery
 
-When `ENSEMBLDB_DATABASE` is left empty, the library fetches the current Ensembl release version and resolves the correct database name automatically (e.g. `homo_sapiens_core_112_38`).
+When `ENSEMBLDB_DATABASE` is left empty, the library fetches the current Ensembl release
+version and resolves the correct database name automatically
+(e.g. `homo_sapiens_core_112_38`).
