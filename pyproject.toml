@@ -24,6 +24,10 @@ dev = [
     "pytest-mock>=3.14.0",
     "ruff>=0.15.12",
 ]
+docs = [
+    "mkdocs-material>=9.6",
+    "mkdocstrings[python]>=1.0",
+]
 
 [tool.uv.sources]
 # Pinned to an immutable tag on HGNC/db-common (never a moving branch).

@@ -9,7 +9,7 @@ module-level :class:`db_common.EngineFactory` and
 
 import logging
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, cast
 
 from db_common import EngineFactory, SessionFactory
 from sqlalchemy.engine import Engine
@@ -23,6 +23,27 @@ logger = logging.getLogger("ensembl_orm")
 
 _engine_factory: EngineFactory | None = None
 _session_factory: SessionFactory | None = None
+
+
+def _typed_engine(factory: EngineFactory) -> Engine:
+    """Return ``factory.get_engine()`` typed as :class:`Engine`.
+
+    ``db_common.EngineFactory.get_engine`` is annotated ``-> Engine`` in its
+    source, but the published wheel ships no ``py.typed`` marker, so mypy flags
+    the import ``[import-untyped]`` and treats the call as returning ``Any`` —
+    which then trips ``[no-any-return]`` at every call site. Bridge the missing
+    marker here with a ``cast`` (truthful: the underlying call does return an
+    ``Engine``) rather than spreading ``type: ignore`` across the module or
+    adding runtime assertions that would fight the session unit tests' stubbed
+    factories.
+
+    Args:
+        factory: The initialized db-common engine factory.
+
+    Returns:
+        The cached SQLAlchemy engine.
+    """
+    return cast(Engine, factory.get_engine())
 
 
 def initialize_engine(settings: DatabaseSettings | None = None) -> Engine:
@@ -46,7 +67,7 @@ def initialize_engine(settings: DatabaseSettings | None = None) -> Engine:
     global _engine_factory, _session_factory
 
     if _engine_factory is not None:
-        return _engine_factory.get_engine()
+        return _typed_engine(_engine_factory)
 
     if settings is None:
         settings = DatabaseSettings()
@@ -58,7 +79,7 @@ def initialize_engine(settings: DatabaseSettings | None = None) -> Engine:
 
     _engine_factory = EngineFactory(settings)
     _session_factory = SessionFactory(_engine_factory)
-    engine = _engine_factory.get_engine()
+    engine = _typed_engine(_engine_factory)
     logger.info("Engine initialized for database: %s", settings.database)
     return engine
 
@@ -74,7 +95,7 @@ def get_engine() -> Engine:
     """
     if _engine_factory is None:
         raise SessionError("Engine not initialized. Call initialize_engine() first.")
-    return _engine_factory.get_engine()
+    return _typed_engine(_engine_factory)
 
 
 @contextmanager
