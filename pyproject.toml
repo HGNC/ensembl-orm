@@ -5,14 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "ensembl-orm"
 version = "0.4.0"
-description = "Read-only SQLModel ORM for the Ensembl homo_sapiens_core MySQL database."
+description = "Read-only SQLAlchemy ORM for the Ensembl homo_sapiens_core MySQL database."
 requires-python = ">=3.13"
 license = {text = "MIT"}
 dependencies = [
     "db-common>=0.1.0",
     "mysqlclient>=2.2.0",
     "sqlalchemy>=2.0.46",
-    "sqlmodel>=0.0.33",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
 ]

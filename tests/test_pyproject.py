@@ -7,7 +7,6 @@ PYPROJECT = PROJECT_ROOT / "pyproject.toml"
 REQUIRED_RUNTIME_DEPS = [
     "mysqlclient",
     "sqlalchemy",
-    "sqlmodel",
     "pydantic",
     "pydantic-settings",
 ]
@@ -47,6 +46,14 @@ def test_dev_dependencies_present() -> None:
     dep_names = [d.split(">=")[0].split("==")[0].split("[")[0] for d in dev_deps]
     for required in REQUIRED_DEV_DEPS:
         assert required in dep_names, f"Missing dev dependency: {required}"
+
+
+def test_sqlmodel_not_a_runtime_dependency() -> None:
+    """SQLModel was dropped during the db-common migration (T5)."""
+    data = _parse_pyproject()
+    deps = data["project"]["dependencies"]
+    dep_names = [d.split(">=")[0].split("==")[0].split("[")[0] for d in deps]
+    assert "sqlmodel" not in dep_names, "sqlmodel should no longer be a runtime dependency"
 
 
 def test_pytest_config_present() -> None:

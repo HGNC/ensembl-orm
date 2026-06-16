@@ -28,7 +28,7 @@ EXPECTED_PUBLIC_API: list[str] = [
 def test_top_level_docstring_matches_public_api_contract() -> None:
     import ensembl_orm
 
-    expected_docstring = "Read-only SQLModel ORM for the Ensembl homo_sapiens_core MySQL database."
+    expected_docstring = "Read-only SQLAlchemy ORM for the Ensembl homo_sapiens_core MySQL database."
     assert ensembl_orm.__doc__ == expected_docstring
 
 

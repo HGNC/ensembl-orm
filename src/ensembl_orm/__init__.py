@@ -1,4 +1,4 @@
-"""Read-only SQLModel ORM for the Ensembl homo_sapiens_core MySQL database."""
+"""Read-only SQLAlchemy ORM for the Ensembl homo_sapiens_core MySQL database."""
 
 from ensembl_orm.config.database_settings import DatabaseSettings
 from ensembl_orm.discovery import discover_database_name

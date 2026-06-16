@@ -39,15 +39,6 @@ def mock_engine() -> MagicMock:
 
 
 @pytest.fixture
-def mock_session() -> MagicMock:
-    """Provide a mocked SQLModel Session bound to mock_engine."""
-    session = MagicMock()
-    session.exec = MagicMock()
-    session.close = MagicMock()
-    return session
-
-
-@pytest.fixture
 def mock_version_response() -> MagicMock:
     """Mock the HTTP response body for the Ensembl release version endpoint."""
     mock_body = MagicMock()
