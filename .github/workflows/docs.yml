@@ -9,6 +9,7 @@ on:
       - 'src/**'
       - 'pyproject.toml'
       - 'uv.lock'
+      - '.github/workflows/docs.yml'
   pull_request:
     branches: [main]
     paths:
@@ -16,6 +17,7 @@ on:
       - 'mkdocs.yml'
       - 'src/**'
       - 'uv.lock'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
