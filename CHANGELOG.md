@@ -1,9 +1,18 @@
 # CHANGELOG
 
 
+## v0.5.1 (2026-06-17)
+
+
 ## v0.5.0 (2026-06-16)
 
 ### Bug Fixes
+
+- **ci**: Pin setup-uv to v8.2.0 instead of non-existent v8 tag
+  ([`9472fe3`](https://github.com/HGNC/ensembl-orm/commit/9472fe3487c5512ae1f7bd0500004c0dc83aefe7))
+
+The astral-sh/setup-uv v8 major tag was never published (HTTP 404 on the git ref), causing all
+  workflows to fail with 'unable to find version v8'. Pin to the latest real release v8.2.0 instead.
 
 - **ci**: Restore green CI after the db-common migration
   ([`86ecb66`](https://github.com/HGNC/ensembl-orm/commit/86ecb66852a650e6eaeb0fc61bfa85dee3219d24))
