@@ -9,7 +9,7 @@ description = "Read-only SQLAlchemy ORM for the Ensembl homo_sapiens_core MySQL 
 requires-python = ">=3.13"
 license = {text = "MIT"}
 dependencies = [
-    "db-common>=0.1.0",
+    "db-common>=0.2.0",
     "mysqlclient>=2.2.0",
     "sqlalchemy>=2.0.46",
     "pydantic>=2.12.5",
@@ -33,7 +33,7 @@ docs = [
 
 [tool.uv.sources]
 # Pinned to an immutable tag on HGNC/db-common (never a moving branch).
-db-common = { git = "https://github.com/HGNC/db-common.git", tag = "v0.1.0" }
+db-common = { git = "https://github.com/HGNC/db-common.git", tag = "v0.2.0" }
 
 
 

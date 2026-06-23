@@ -235,8 +235,8 @@ wheels = [
 
 [[package]]
 name = "db-common"
-version = "0.1.0"
-source = { git = "https://github.com/HGNC/db-common.git?tag=v0.1.0#67b6caef9e035f0ddcb29ab9ac6af0c1a0764a42" }
+version = "0.2.0"
+source = { git = "https://github.com/HGNC/db-common.git?tag=v0.2.0#aca91bb45ced691457e34e28473e14ffb07bb689" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -245,7 +245,7 @@ dependencies = [
 
 [[package]]
 name = "ensembl-orm"
-version = "0.4.0"
+version = "0.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "db-common" },
@@ -270,7 +270,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "db-common", git = "https://github.com/HGNC/db-common.git?tag=v0.1.0" },
+    { name = "db-common", git = "https://github.com/HGNC/db-common.git?tag=v0.2.0" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.6" },
     { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=1.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },

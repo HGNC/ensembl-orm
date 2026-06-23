@@ -14,6 +14,13 @@ Settings are loaded from environment variables with the `ENSEMBLDB_` prefix.
 | `ENSEMBLDB_DATABASE` | _(empty)_ | Target database name (auto-discovered if empty) |
 | `ENSEMBLDB_POOL_SIZE` | `3` | Connection pool size |
 | `ENSEMBLDB_POOL_RECYCLE` | `3600` | Seconds before a connection is recycled |
+| `ENSEMBLDB_CHARSET` | `utf8mb4` | Connection charset enforced at connect (MySQL only) |
+| `ENSEMBLDB_COLLATION` | _(empty)_ | Optional connection collation enforced at connect (MySQL only) |
+
+> The `charset`/`collation` fields are inherited from `db-common` (v0.2.0+). On
+> the MySQL driver, `utf8mb4` is now enforced on every pooled connection at
+> connect time via `SET NAMES` (configurable through the env vars above); on the
+> SQLite driver the fields are ignored.
 
 ## Using defaults
 
